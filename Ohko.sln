@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.Core", "Ohko.Core\Ohko.Core.csproj", "{F9420267-2E44-411F-B53B-A1F463FD4AC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.iOS", "Ohko.iOS\Ohko.iOS.csproj", "{7D3F5CF1-C861-43AA-8972-4EAAD78502E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.Desktop", "Ohko.Desktop\Ohko.Desktop.csproj", "{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9420267-2E44-411F-B53B-A1F463FD4AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9420267-2E44-411F-B53B-A1F463FD4AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9420267-2E44-411F-B53B-A1F463FD4AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9420267-2E44-411F-B53B-A1F463FD4AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D3F5CF1-C861-43AA-8972-4EAAD78502E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D3F5CF1-C861-43AA-8972-4EAAD78502E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D3F5CF1-C861-43AA-8972-4EAAD78502E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D3F5CF1-C861-43AA-8972-4EAAD78502E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
