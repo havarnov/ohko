@@ -19,3 +19,4 @@
 /processor:AsepriteFileContentProcessor
 /processorParam:PremultiplyAlpha=True
 /build:entities.aseprite
+/build:tiles.aseprite
