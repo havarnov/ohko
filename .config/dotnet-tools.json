@@ -8,6 +8,13 @@
         "mgcb"
       ],
       "rollForward": false
+    },
+    "ldtkmonogame.codegen": {
+      "version": "1.7.0",
+      "commands": [
+        "ldtkgen"
+      ],
+      "rollForward": false
     }
   }
 }

@@ -131,7 +131,7 @@ internal class ControlPad(Hero hero)
                 rotation: 0,
                 origin: Vector2.One,
                 effects: SpriteEffects.None,
-                layerDepth: 0.00001f);
+                layerDepth: 1f);
         }
     }
 

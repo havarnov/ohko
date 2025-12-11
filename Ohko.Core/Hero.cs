@@ -16,6 +16,8 @@ public class Hero(Vector2 position)
     private AnimatedSprite _currentAnimation => _animations[CurrentState];
     private readonly Queue<State>_comboQueue = new();
 
+    public Vector2 Position { get; set; } = position;
+
     public State CurrentState
     {
         get;
@@ -83,15 +85,15 @@ public class Hero(Vector2 position)
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var scale = _graphicsDevice.Viewport.Width / 50;
-        var spritePosition = position - (_currentAnimation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2 * scale);
+        // var scale = 1; // _graphicsDevice.Viewport.Width / 50;
+        var spritePosition = Position - (_currentAnimation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2); // * scale);
         spriteBatch.Draw(
             _currentAnimation.TextureRegion,
             spritePosition,
             _currentAnimation.Color * _currentAnimation.Transparency,
             _currentAnimation.Rotation,
             Vector2.Zero,
-            _currentAnimation.Scale * scale,
+            _currentAnimation.Scale, // * scale,
             _currentAnimation.SpriteEffects,
             layerDepth: 1);
     }

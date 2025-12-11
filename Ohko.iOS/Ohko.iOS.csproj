@@ -21,6 +21,7 @@
     <Content Include="../Ohko.Core/Content/**/*">
       <Link>Content\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
+    <Content Include="../Ohko.Core/ohko.ldtk" Link="ohko.ldtk" />
   </ItemGroup>
 
   <Target Name="RestoreDotnetTools" BeforeTargets="CollectPackageReferences">

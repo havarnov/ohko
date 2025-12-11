@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aether.Physics2D" />
     <PackageReference Include="Gum.MonoGame" />
+    <PackageReference Include="LDtkMonogame" />
     <PackageReference Include="MonoGame.Aseprite" />
     <PackageReference Include="MonoGame.Content.Builder.Task" />
     <PackageReference Include="MonoGame.Framework.DesktopGL">
@@ -14,7 +16,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <Target Name="Codegen" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet ldtkgen -n 'LDtkTypes' -i ./ohko.ldtk -o ./LDtkTypes/ --LevelClassName LevelDataName --PointAsVector2" />
+  </Target>
+
   <ItemGroup>
+    <Content Include="./ohko.ldtk" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Content/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

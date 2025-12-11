@@ -20,3 +20,4 @@
 /processorParam:PremultiplyAlpha=True
 /build:entities.aseprite
 /build:tiles.aseprite
+/build:world.aseprite
