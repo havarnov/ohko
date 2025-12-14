@@ -47,6 +47,7 @@ internal class LevelManager(LDtkFile lDtkFile, World physicsWorld)
                     0f,
                     BodyType.Static);
                 wall.FixedRotation = true;
+                wall.FixtureList[0].Friction = 0.5f;
             }
         }
 

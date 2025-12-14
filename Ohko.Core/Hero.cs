@@ -4,11 +4,26 @@ using AsepriteDotNet.Aseprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Aseprite;
+using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-public class Hero(Vector2 position)
+public static class AetherExtenstions
+{
+    public static Vector2 ToVector2(this nkast.Aether.Physics2D.Common.Vector2 vector2)
+    {
+        return new Vector2(vector2.X, vector2.Y);
+    }
+
+    public static nkast.Aether.Physics2D.Common.Vector2 ToVector2(this Vector2 vector2)
+    {
+        return new nkast.Aether.Physics2D.Common.Vector2(vector2.X, vector2.Y);
+    }
+}
+
+public class Hero
 {
     private readonly Dictionary<State, AnimatedSprite> _animations = new();
     private GraphicsDevice _graphicsDevice = null!;
@@ -16,7 +31,20 @@ public class Hero(Vector2 position)
     private AnimatedSprite _currentAnimation => _animations[CurrentState];
     private readonly Queue<State>_comboQueue = new();
 
-    public Vector2 Position { get; set; } = position;
+    public Vector2 Position
+    {
+        get => body.Position.ToVector2();
+        set => body.Position = value.ToVector2();
+    }
+
+    private readonly Body body;
+
+    public Hero(World world)
+    {
+        body = world.CreateRectangle(16, 16, 1f, Vector2.Zero.ToVector2(), bodyType: BodyType.Dynamic);
+        body.FixedRotation = true;
+    }
+
 
     public State CurrentState
     {
@@ -55,6 +83,11 @@ public class Hero(Vector2 position)
         { State.KickACharge, State.KickA },
     };
 
+    private readonly Dictionary<(State, State), Vector2> effects = new()
+    {
+        { (State.KickACharge, State.KickA), new Vector2(0f, -10000f) }
+    };
+
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
@@ -73,6 +106,9 @@ public class Hero(Vector2 position)
         CurrentState = State.Idle;
     }
 
+    private State lastState = State.Unknown;
+    private bool space = false;
+
     public void Update(GameTime gameTime)
     {
         if (_comboQueue.TryDequeue(out var combo))
@@ -80,20 +116,27 @@ public class Hero(Vector2 position)
             CurrentState = combo;
         }
 
+        if (effects.TryGetValue((lastState, CurrentState), out var effect))
+        {
+            body.ApplyLinearImpulse(effect.ToVector2());
+            Console.WriteLine(effect);
+        }
+
+        lastState = CurrentState;
+
         _currentAnimation.Update(gameTime);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        // var scale = 1; // _graphicsDevice.Viewport.Width / 50;
-        var spritePosition = Position - (_currentAnimation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2); // * scale);
+        var spritePosition = Position - (_currentAnimation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
         spriteBatch.Draw(
             _currentAnimation.TextureRegion,
             spritePosition,
             _currentAnimation.Color * _currentAnimation.Transparency,
             _currentAnimation.Rotation,
             Vector2.Zero,
-            _currentAnimation.Scale, // * scale,
+            _currentAnimation.Scale,
             _currentAnimation.SpriteEffects,
             layerDepth: 1);
     }

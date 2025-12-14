@@ -100,10 +100,35 @@ internal class ControlPad(Hero hero)
 
         if (leftButtonPressed && mouseState.LeftButton == ButtonState.Released)
         {
-            var button = _buttons.FirstOrDefault(b => b.Contains(mouseState.Position));
+            hero.AddCombo(combo.ToList());
+
+            started = false;
+            combo.Clear();
+            foreach (var button in _buttons)
+            {
+                button.IsEnabled = false;
+            }
+        }
+        else if (!leftButtonPressed && mouseState.LeftButton == ButtonState.Pressed)
+        {
+            var button = _buttons.FirstOrDefault(b => b.Contains(new  Point(mouseState.Position.X, mouseState.Position.Y)));
+            if (button is not null && object.ReferenceEquals(button, _buttons[4]))
+            {
+                started = true;
+                button.IsEnabled = true;
+                combo.Add(button.Position);
+            }
+        }
+        else if (leftButtonPressed && mouseState.LeftButton == ButtonState.Pressed && started)
+        {
+            var button = _buttons.FirstOrDefault(b => b.Contains(new  Point(mouseState.Position.X, mouseState.Position.Y)));
             if (button is not null)
             {
-                button.IsEnabled = !button.IsEnabled;
+                button.IsEnabled = true;
+                if (combo.Last() != button.Position)
+                {
+                    combo.Add(button.Position);
+                }
             }
         }
 

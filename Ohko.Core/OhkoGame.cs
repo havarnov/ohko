@@ -40,15 +40,14 @@ public class OhkoGame : Game
 
     protected override void Initialize()
     {
-        // GumService.Default.Initialize(this);
-        _hero = new Hero(new Vector2(_gameBounds.X / 2f, (_gameBounds.Y * 0.6f) / 2f));
-        _controlPad = new ControlPad(_hero);
-
         var worldFile = LDtkFile.FromFile("ohko.ldtk");
         _physicsWorld = new World
         {
             Gravity = new nkast.Aether.Physics2D.Common.Vector2(0, 9.81f),
         };
+
+        _hero = new Hero(_physicsWorld);
+        _controlPad = new ControlPad(_hero);
 
         base.Initialize();
 
@@ -57,7 +56,7 @@ public class OhkoGame : Game
 
         camera = new Camera(GraphicsDevice);
         camera.Position = (_levelManager.Level.Position + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f  + 50).ToPoint()).ToVector2();
-        camera.Zoom = 4f;
+        camera.Zoom = _graphics.GraphicsDevice.Viewport.Width / 150f;
         _hero.Position = (_levelManager.Level.Position + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f).ToPoint()).ToVector2();
     }
 
@@ -70,8 +69,10 @@ public class OhkoGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
         _controlPad.Update(_gameBounds);
         _hero.Update(gameTime);
+        camera.Position = _hero.Position;
         camera.Update();
         base.Update(gameTime);
     }
