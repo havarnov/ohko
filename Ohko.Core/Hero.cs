@@ -1,34 +1,31 @@
 using System;
 using System.Collections.Generic;
-using AsepriteDotNet.Aseprite;
+using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MonoGame.Aseprite;
 using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-public static class AetherExtenstions
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(HitBox), typeDiscriminator: nameof(HitBox))]
+public abstract class AnimationBoxData
 {
-    public static Vector2 ToVector2(this nkast.Aether.Physics2D.Common.Vector2 vector2)
+    public class HitBox : AnimationBoxData
     {
-        return new Vector2(vector2.X, vector2.Y);
-    }
-
-    public static nkast.Aether.Physics2D.Common.Vector2 ToVector2(this Vector2 vector2)
-    {
-        return new nkast.Aether.Physics2D.Common.Vector2(vector2.X, vector2.Y);
+        [JsonPropertyName("damage_multiplier")]
+        public required float DamageMultiplier { get; init; }
     }
 }
 
 public class Hero
 {
-    private readonly Dictionary<State, AnimatedSprite> _animations = new();
+    private readonly Dictionary<State, AnimatedSpriteExtended<AnimationBoxData>> _animations = new();
     private GraphicsDevice _graphicsDevice = null!;
 
-    private AnimatedSprite _currentAnimation => _animations[CurrentState];
+    private AnimatedSpriteExtended<AnimationBoxData> _currentAnimation => _animations[CurrentState];
     private readonly Queue<State>_comboQueue = new();
 
     public Vector2 Position
@@ -54,21 +51,26 @@ public class Hero
         {
             if (field != value && field != State.Unknown)
             {
-                _animations[field].Stop();
-                _animations[field].Reset();
+                _animations[field].AnimatedSprite.Stop();
+                _animations[field].AnimatedSprite.Reset();
             }
 
             field = value;
-            _animations[field].Play();
+            _animations[field].AnimatedSprite.Play();
 
             if (_continuation.TryGetValue(field, out var continuation))
             {
-                _currentAnimation.OnFrameEnd += _ =>
+                _currentAnimation.AnimatedSprite.OnAnimationBegin += _ =>
                 {
-                    CurrentState = continuation;
-                    _currentAnimation.OnAnimationLoop += _ =>
+                    var start = _currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex;
+                    var count = _currentAnimation.AnimatedSprite.FrameCount;
+                    var end = start + count - 1;
+                    _currentAnimation.AnimatedSprite.OnFrameBegin += _ =>
                     {
-                        CurrentState = State.Idle;
+                        if (_currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex == end)
+                        {
+                            CurrentState = continuation;
+                        }
                     };
                 };
             }
@@ -78,36 +80,50 @@ public class Hero
     private readonly Dictionary<State, State> _continuation = new()
     {
         { State.PunchACharge, State.PunchA },
+        { State.PunchA, State.Idle },
         { State.PunchBCharge, State.PunchB },
+        { State.PunchB, State.Idle },
         { State.PunchCCharge, State.PunchC },
+        { State.PunchC, State.Idle },
         { State.KickACharge, State.KickA },
+        { State.KickA, State.Idle },
+        { State.Back, State.Idle },
     };
 
     private readonly Dictionary<(State, State), Vector2> effects = new()
     {
-        { (State.KickACharge, State.KickA), new Vector2(0f, -10000f) }
+        { (State.KickACharge, State.KickA), new Vector2(1000f, -900f) },
+        { (State.Idle, State.Back), new Vector2(-1000f, -100f) },
     };
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
         _graphicsDevice = graphicsDevice;
-        var file = content.Load<AsepriteFile>("entities");
-        var spriteSheet = file.CreateSpriteSheet(graphicsDevice, onlyVisibleLayers: true);
 
-        _animations[State.Idle] = spriteSheet.CreateAnimatedSprite("kIdle");
-        _animations[State.PunchACharge] = spriteSheet.CreateAnimatedSprite("kPunchA_charge");
-        _animations[State.PunchA] = spriteSheet.CreateAnimatedSprite("kPunchA_hit");
-        _animations[State.PunchBCharge] = spriteSheet.CreateAnimatedSprite("kPunchB_charge");
-        _animations[State.PunchB] = spriteSheet.CreateAnimatedSprite("kPunchB_hit");
-        _animations[State.PunchCCharge] = spriteSheet.CreateAnimatedSprite("kPunchC_charge");
-        _animations[State.PunchC] = spriteSheet.CreateAnimatedSprite("kPunchC_hit");
-        _animations[State.KickACharge] = spriteSheet.CreateAnimatedSprite("kKickA_charge");
-        _animations[State.KickA] = spriteSheet.CreateAnimatedSprite("kKickA_hit");
+        _animations[State.Idle] =
+            new AnimatedSpriteExtended<AnimationBoxData>("kIdle", "kIdle", content, graphicsDevice);
+        _animations[State.PunchACharge] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchA_charge", content, graphicsDevice);
+        _animations[State.PunchA] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchA_hit", content, graphicsDevice);
+        _animations[State.PunchBCharge] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchB_charge", content, graphicsDevice);
+        _animations[State.PunchB] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchB_hit", content, graphicsDevice);
+        _animations[State.PunchCCharge] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchC_charge", content, graphicsDevice);
+        _animations[State.PunchC] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchC_hit", content, graphicsDevice);
+        _animations[State.KickACharge] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kKickA_charge", content, graphicsDevice);
+        _animations[State.KickA] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kKickA_hit", content, graphicsDevice);
+        _animations[State.Back] =
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kHit", content, graphicsDevice);
         CurrentState = State.Idle;
     }
 
     private State lastState = State.Unknown;
-    private bool space = false;
 
     public void Update(GameTime gameTime)
     {
@@ -119,25 +135,24 @@ public class Hero
         if (effects.TryGetValue((lastState, CurrentState), out var effect))
         {
             body.ApplyLinearImpulse(effect.ToVector2());
-            Console.WriteLine(effect);
         }
 
         lastState = CurrentState;
 
-        _currentAnimation.Update(gameTime);
+        _currentAnimation.AnimatedSprite.Update(gameTime);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var spritePosition = Position - (_currentAnimation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
+        var spritePosition = Position - (_currentAnimation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
         spriteBatch.Draw(
-            _currentAnimation.TextureRegion,
+            _currentAnimation.AnimatedSprite.TextureRegion,
             spritePosition,
-            _currentAnimation.Color * _currentAnimation.Transparency,
-            _currentAnimation.Rotation,
+            _currentAnimation.AnimatedSprite.Color * _currentAnimation.AnimatedSprite.Transparency,
+            _currentAnimation.AnimatedSprite.Rotation,
             Vector2.Zero,
-            _currentAnimation.Scale,
-            _currentAnimation.SpriteEffects,
+            _currentAnimation.AnimatedSprite.Scale,
+            _currentAnimation.AnimatedSprite.SpriteEffects,
             layerDepth: 1);
     }
 
@@ -153,6 +168,7 @@ public class Hero
         PunchC = 7,
         KickACharge = 8,
         KickA = 9,
+        Back = 10,
     }
 
     internal void AddCombo(List<ControlPad.ButtonPosition> combo)
@@ -165,7 +181,14 @@ public class Hero
 
     private Dictionary<UInt128, State> _comboes = new()
     {
-        { ToUInt128([
+        {
+            ToUInt128([
+                ControlPad.ButtonPosition.Center,
+                ControlPad.ButtonPosition.MiddleLeft]),
+            State.Back
+        },
+        {
+            ToUInt128([
             ControlPad.ButtonPosition.Center,
             ControlPad.ButtonPosition.MiddleRight]),
             State.PunchACharge
