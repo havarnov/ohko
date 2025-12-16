@@ -55,12 +55,15 @@ public class OhkoGame : Game
         _levelManager.Load("Level1", GraphicsDevice, _spriteBatch, Content);
 
         camera = new Camera(GraphicsDevice);
-        camera.Zoom = _graphics.GraphicsDevice.Viewport.Width / 130f;
+        camera.Zoom = _graphics.GraphicsDevice.Viewport.Width / 100f;
 
         var unscaledYOffset = _graphics.GraphicsDevice.Viewport.Height * 0.6f - (_graphics.GraphicsDevice.Viewport.Height / 2f);
 
         camera.Position = (_levelManager.Level.Position + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y - unscaledYOffset / camera.Zoom).ToPoint()).ToVector2();
-        _hero.Position = (_levelManager.Level.Position + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f).ToPoint()).ToVector2();
+        _hero.Position = (_levelManager.Level.Position
+                          + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f).ToPoint()
+                          + new Point(0, 16 * 4)
+                          ).ToVector2();
     }
 
     protected override void LoadContent()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -10,20 +11,29 @@ using nkast.Aether.Physics2D.Dynamics;
 namespace Ohko.Core;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(HurtBox), typeDiscriminator: nameof(HurtBox))]
+[JsonDerivedType(typeof(CollisionBox), typeDiscriminator: nameof(CollisionBox))]
 [JsonDerivedType(typeof(HitBox), typeDiscriminator: nameof(HitBox))]
 public abstract class AnimationBoxData
 {
-    public class HitBox : AnimationBoxData
+    private AnimationBoxData()
+    {
+    }
+
+    public class HitBox : AnimationBoxData;
+
+    public class HurtBox : AnimationBoxData
     {
         [JsonPropertyName("damage_multiplier")]
         public required float DamageMultiplier { get; init; }
     }
+
+    public class CollisionBox : AnimationBoxData;
 }
 
 public class Hero
 {
     private readonly Dictionary<State, AnimatedSpriteExtended<AnimationBoxData>> _animations = new();
-    private GraphicsDevice _graphicsDevice = null!;
 
     private AnimatedSpriteExtended<AnimationBoxData> _currentAnimation => _animations[CurrentState];
     private readonly Queue<State>_comboQueue = new();
@@ -38,10 +48,49 @@ public class Hero
 
     public Hero(World world)
     {
-        body = world.CreateRectangle(16, 16, 1f, Vector2.Zero.ToVector2(), bodyType: BodyType.Dynamic);
+        body = world.CreateBody(Vector2.Zero.ToVector2(), bodyType: BodyType.Dynamic);
         body.FixedRotation = true;
     }
 
+    private void UpdateBoxes()
+    {
+        foreach (var fixture in body.FixtureList.ToList())
+        {
+            body.Remove(fixture);
+        }
+
+        foreach (var key in _currentAnimation.CurrentSliceKeys)
+        {
+            var density = key.UserData is AnimationBoxData.CollisionBox
+                ? 1f
+                : 0f;
+            // var center = _currentAnimation.AnimatedSprite.TextureRegion.Bounds.Center;
+            var center = new Point(16, 16);
+            var xx = key.SliceKey.Bounds.X + key.SliceKey.Bounds.Width / 2f;
+            var yy = key.SliceKey.Bounds.Y + key.SliceKey.Bounds.Height / 2f;
+            var fixture = body.CreateRectangle(
+                key.SliceKey.Bounds.Width,
+                key.SliceKey.Bounds.Height,
+                density,
+                offset: new nkast.Aether.Physics2D.Common.Vector2(xx - center.X, yy - center.Y));
+            fixture.Tag = key.SliceName;
+
+            if (key.UserData is AnimationBoxData.HurtBox)
+            {
+                fixture.CollidesWith = Category.Cat3;
+                fixture.CollisionCategories = Category.Cat2;
+            }
+            else if (key.UserData is AnimationBoxData.HitBox)
+            {
+                fixture.CollidesWith = Category.Cat2;
+                fixture.CollisionCategories = Category.Cat3;
+            }
+            else
+            {
+                fixture.CollidesWith = Category.Cat1;
+            }
+        }
+    }
 
     public State CurrentState
     {
@@ -92,14 +141,12 @@ public class Hero
 
     private readonly Dictionary<(State, State), Vector2> effects = new()
     {
-        { (State.KickACharge, State.KickA), new Vector2(1000f, -900f) },
-        { (State.Idle, State.Back), new Vector2(-1000f, -100f) },
+        { (State.KickACharge, State.KickA), new Vector2(100f, -900f) },
+        { (State.Idle, State.Back), new Vector2(-100f, -100f) },
     };
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
-        _graphicsDevice = graphicsDevice;
-
         _animations[State.Idle] =
             new AnimatedSpriteExtended<AnimationBoxData>("kIdle", "kIdle", content, graphicsDevice);
         _animations[State.PunchACharge] =
@@ -127,6 +174,8 @@ public class Hero
 
     public void Update(GameTime gameTime)
     {
+        UpdateBoxes();
+
         if (_comboQueue.TryDequeue(out var combo))
         {
             CurrentState = combo;

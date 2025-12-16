@@ -52,7 +52,10 @@ public class SliceExtended<T>(AsepriteSlice slice, T? userData)
 
     public SliceKeyExtended<T> SliceKeyFromFrameIndex(int frameIndex)
     {
-        var key = SliceKeys.First(k => k.FrameIndex == frameIndex);
+        // Slices that are equal multiple frames in a row will only have one key representing multiple frames.
+        var key = SliceKeys
+            .Reverse()
+            .First(k => k.FrameIndex <= frameIndex);
         return new SliceKeyExtended<T>(slice.Name, key, UserData);
     }
 }
