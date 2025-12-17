@@ -43,7 +43,7 @@ public class OhkoGame : Game
         var worldFile = LDtkFile.FromFile("ohko.ldtk");
         _physicsWorld = new World
         {
-            Gravity = new nkast.Aether.Physics2D.Common.Vector2(0, 9.81f),
+            Gravity = new nkast.Aether.Physics2D.Common.Vector2(0, 100f),
         };
 
         _hero = new Hero(_physicsWorld);

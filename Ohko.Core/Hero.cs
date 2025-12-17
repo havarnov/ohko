@@ -141,14 +141,14 @@ public class Hero
 
     private readonly Dictionary<(State, State), Vector2> effects = new()
     {
-        { (State.KickACharge, State.KickA), new Vector2(100f, -900f) },
-        { (State.Idle, State.Back), new Vector2(-100f, -100f) },
+        { (State.KickACharge, State.KickA), new Vector2(1f, -4f) },
+        { (State.Idle, State.Back), new Vector2(-1f, -2f) },
     };
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
         _animations[State.Idle] =
-            new AnimatedSpriteExtended<AnimationBoxData>("kIdle", "kIdle", content, graphicsDevice);
+            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kIdle", content, graphicsDevice);
         _animations[State.PunchACharge] =
             new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchA_charge", content, graphicsDevice);
         _animations[State.PunchA] =
@@ -183,7 +183,11 @@ public class Hero
 
         if (effects.TryGetValue((lastState, CurrentState), out var effect))
         {
-            body.ApplyLinearImpulse(effect.ToVector2());
+            float jumpSpeed = 24f;
+            float jumpImpulse = body.Mass * jumpSpeed;
+            effect.Normalize();
+            var effectImpulse = effect *  jumpImpulse;
+            body.ApplyLinearImpulse(effectImpulse.ToVector2());
         }
 
         lastState = CurrentState;

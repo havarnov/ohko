@@ -55,7 +55,7 @@ public class SliceExtended<T>(AsepriteSlice slice, T? userData)
         // Slices that are equal multiple frames in a row will only have one key representing multiple frames.
         var key = SliceKeys
             .Reverse()
-            .First(k => k.FrameIndex <= frameIndex);
+            .First(k => frameIndex <= k.FrameIndex);
         return new SliceKeyExtended<T>(slice.Name, key, UserData);
     }
 }
