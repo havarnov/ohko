@@ -183,7 +183,7 @@ public class Hero
 
         if (effects.TryGetValue((lastState, CurrentState), out var effect))
         {
-            float jumpSpeed = 24f;
+            float jumpSpeed = 240f;
             float jumpImpulse = body.Mass * jumpSpeed;
             effect.Normalize();
             var effectImpulse = effect *  jumpImpulse;
