@@ -16,6 +16,16 @@ namespace Ohko.Core;
 public class StateManager<TState>(TState initialState, bool isFacingLeft, Body body)
     where TState : struct, Enum
 {
+    private bool _isFacingLeft
+    {
+        get => field;
+        set
+        {
+            CurrentStateInfo.Animation.FlipHorizontally = value;
+            field = value;
+        }
+    } = isFacingLeft;
+
     public Vector2 Position
     {
         get => body.Position.Into();
@@ -56,7 +66,7 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
                 }
             };
 
-            stateInfo.Animation.FlipHorizontally = isFacingLeft;
+            stateInfo.Animation.FlipHorizontally = _isFacingLeft;
             stateInfo.Animation.Stop();
             stateInfo.Animation.Reset();
 
@@ -82,6 +92,7 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
     }
 
     private StateInfo CurrentStateInfo => _states[CurrentState];
+
     public FrameConfiguration? CurrentFrameConfiguration
     {
         get
@@ -99,7 +110,7 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
                                 Effect.MoveEffect moveEffect => (Effect)new Effect.MoveEffect()
                                 {
                                     SpeedFactor = moveEffect.SpeedFactor,
-                                    Vector = moveEffect.Vector * new Vector2(isFacingLeft ? -1 : 1, 1),
+                                    Vector = moveEffect.Vector * new Vector2(_isFacingLeft ? -1 : 1, 1),
                                 },
                                 _ => throw new ArgumentOutOfRangeException(nameof(i))
                             })
@@ -130,6 +141,8 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
             }
         }
     }
+
+    public IEntity Face { get; set; }
 
     private readonly Dictionary<TState, StateInfo> _states = new();
 
@@ -182,6 +195,15 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
 
     public void Update(GameTime gameTime)
     {
+        if (Face.Position.X < Position.X)
+        {
+            _isFacingLeft = true;
+        }
+        else
+        {
+            _isFacingLeft = false;
+        }
+
         _states[CurrentState].Animation.Update(gameTime);
     }
 
@@ -226,6 +248,12 @@ public class Hero : IEntity
     private readonly Queue<State>_comboQueue = new();
     private GraphicsDevice _graphicsDevice = null!;
 
+    public IEntity Face
+    {
+        get => _stateManager.Face;
+        set => _stateManager.Face = value;
+    }
+
     public Vector2 Position
     {
         get => _stateManager.Position;
@@ -234,15 +262,7 @@ public class Hero : IEntity
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
-        var states = JsonSerializer.Deserialize<StatesConfiguration>(
-            File.ReadAllText("Content/states.json"),
-            new JsonSerializerOptions()
-            {
-                PropertyNameCaseInsensitive = true,
-            });
-
         _graphicsDevice = graphicsDevice;
-
         _stateManager.Load(content, graphicsDevice);
     }
 

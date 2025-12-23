@@ -1,7 +1,6 @@
 using LDtk;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using nkast.Aether.Physics2D.Collision.Shapes;
 using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
@@ -15,6 +14,7 @@ public class OhkoGame : Game
     private ControlPad _controlPad = null!;
     private SpriteBatch _spriteBatch = null!;
     private Hero _hero = null!;
+    private Hero _opponent = null!;
     private readonly EntityManager _entityManager = new();
     private LevelManager _levelManager = null!;
     private Camera camera = null!;
@@ -53,6 +53,12 @@ public class OhkoGame : Game
         _entityManager.Add(_hero);
         _controlPad = new ControlPad(_hero);
 
+        _opponent = new Hero(_physicsWorld);
+        _entityManager.Add(_opponent);
+
+        _hero.Face = _opponent;
+        _opponent.Face = _hero;
+
         base.Initialize();
 
         _levelManager = new LevelManager(worldFile, _physicsWorld);
@@ -71,6 +77,7 @@ public class OhkoGame : Game
 
         _hero.Position = _levelManager.Level.Position.ToVector2()
                          + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f);
+        _opponent.Position = _hero.Position + new Vector2(40, 0);
     }
 
     protected override void LoadContent()
@@ -78,7 +85,6 @@ public class OhkoGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _controlPad.LoadContent(Content, GraphicsDevice);
         _entityManager.LoadContent(Content, GraphicsDevice);
-        _hero.LoadContent(Content, GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)
@@ -86,7 +92,7 @@ public class OhkoGame : Game
         _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
         _controlPad.Update(_gameBounds);
         _entityManager.Update(gameTime);
-        camera.Position = new Vector2(_hero.Position.X, camera.Position.Y);
+        camera.Position = new Vector2((_hero.Position.X + _opponent.Position.X) / 2f, camera.Position.Y);
         camera.Update();
         base.Update(gameTime);
     }

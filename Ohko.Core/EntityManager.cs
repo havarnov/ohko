@@ -7,6 +7,7 @@ namespace Ohko.Core;
 
 public interface IEntity
 {
+    Vector2 Position { get; set; }
 
     List<Box> Boxes => [];
 
@@ -65,6 +66,11 @@ public class EntityManager
             }
         }
 
+        Flush();
+    }
+
+    private void Flush()
+    {
         foreach (var entity in _pendingRemoves)
         {
             _entities.Remove(entity);
@@ -89,6 +95,8 @@ public class EntityManager
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
+        Flush();
+
         foreach (var entity in _entities)
         {
             entity.LoadContent(content, graphicsDevice);
