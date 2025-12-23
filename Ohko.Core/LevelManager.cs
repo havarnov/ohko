@@ -13,6 +13,8 @@ internal class LevelManager(LDtkFile lDtkFile, World physicsWorld)
     private LDtkWorld? world;
     public LDtkLevel Level { get; private set; } = null!;
 
+    public int TileSize => world!.WorldGridWidth;
+
     public void Load(
         string levelName,
         GraphicsDevice graphicsDevice,

@@ -64,7 +64,10 @@ public class OhkoGame : Game
         var unscaledYOffset = _graphics.GraphicsDevice.Viewport.Height * 0.6f - (_graphics.GraphicsDevice.Viewport.Height / 2f);
 
         camera.Position = _levelManager.Level.Position.ToVector2()
-                          + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y - unscaledYOffset / camera.Zoom);
+                          + new Vector2(
+                              _levelManager.Level.Size.X / 2f,
+                              // NOTE: 16 here is hard coded for this tile size
+                              _levelManager.Level.Size.Y - 16 - (unscaledYOffset / camera.Zoom));
 
         _hero.Position = _levelManager.Level.Position.ToVector2()
                          + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f);
