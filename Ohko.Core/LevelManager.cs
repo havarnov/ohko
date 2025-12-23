@@ -1,17 +1,19 @@
 using System;
+using System.Collections.Generic;
 using LDtk;
 using LDtkTypes;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-internal class LevelManager(LDtkFile lDtkFile, World physicsWorld)
+internal class LevelManager(LDtkFile lDtkFile)
 {
     private LdtkRenderer renderer = null!;
     private LDtkWorld? world;
     public LDtkLevel Level { get; private set; } = null!;
+    public List<Rectangle> CollisionBoxes = [];
 
     public void Load(
         string levelName,
@@ -38,16 +40,11 @@ internal class LevelManager(LDtkFile lDtkFile, World physicsWorld)
                     continue;
                 }
 
-                var wall = physicsWorld.CreateRectangle(
+                CollisionBoxes.Add(new Rectangle(
+                    collisions.WorldPosition.X + (i * collisions.TileSize),
+                    collisions.WorldPosition.Y + (j * collisions.TileSize),
                     collisions.TileSize,
-                    collisions.TileSize,
-                    1f,
-                    new nkast.Aether.Physics2D.Common.Vector2(collisions.WorldPosition.X, collisions.WorldPosition.Y)
-                    + new nkast.Aether.Physics2D.Common.Vector2((i * collisions.TileSize) + (collisions.TileSize / 2f), (j * collisions.TileSize) + (collisions.TileSize / 2f)),
-                    0f,
-                    BodyType.Static);
-                wall.FixedRotation = true;
-                wall.FixtureList[0].Friction = 0.5f;
+                    collisions.TileSize));
             }
         }
 

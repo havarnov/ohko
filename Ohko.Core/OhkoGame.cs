@@ -1,9 +1,6 @@
-using System.IO;
-using System.Text.Json;
 using LDtk;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
@@ -17,7 +14,6 @@ public class OhkoGame : Game
     private SpriteBatch _spriteBatch = null!;
     private Hero _hero = null!;
     private LevelManager _levelManager = null!;
-    private World _physicsWorld = null!;
     private Camera camera = null!;
 
     public OhkoGame(bool isFullScreen)
@@ -43,17 +39,13 @@ public class OhkoGame : Game
     protected override void Initialize()
     {
         var worldFile = LDtkFile.FromFile("ohko.ldtk");
-        _physicsWorld = new World
-        {
-            Gravity = new nkast.Aether.Physics2D.Common.Vector2(0, 1000f),
-        };
 
-        _hero = new Hero(_physicsWorld);
+        _hero = new Hero();
         _controlPad = new ControlPad(_hero);
 
         base.Initialize();
 
-        _levelManager = new LevelManager(worldFile, _physicsWorld);
+        _levelManager = new LevelManager(worldFile);
         _levelManager.Load("Level1", GraphicsDevice, _spriteBatch, Content);
 
         camera = new Camera(GraphicsDevice);
@@ -77,7 +69,6 @@ public class OhkoGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
         _controlPad.Update(_gameBounds);
         _hero.Update(gameTime);
         camera.Position = new Vector2(_hero.Position.X, camera.Position.Y);

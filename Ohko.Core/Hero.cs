@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Aseprite;
-using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
@@ -149,7 +148,7 @@ public class Hero
 
     private readonly bool facingLeft;
 
-    public Hero(World world)
+    public Hero()
     {
         facingLeft = false;
     }
