@@ -15,7 +15,7 @@ public class OhkoGame : Game
     private ControlPad _controlPad = null!;
     private SpriteBatch _spriteBatch = null!;
     private Hero _hero = null!;
-    private EntityManager _entityManager = new();
+    private readonly EntityManager _entityManager = new();
     private LevelManager _levelManager = null!;
     private Camera camera = null!;
     private World _physicsWorld = null!;
