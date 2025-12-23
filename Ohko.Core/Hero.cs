@@ -216,7 +216,9 @@ public class Hero : IEntity
         {
             if (effect is Effect.MoveEffect moveEffect)
             {
-                _stateManager.Position += (moveEffect.Vector * moveEffect.SpeedFactor * 1);
+                var vector = moveEffect.Vector;
+                vector.Normalize();
+                _stateManager.Position += (vector * moveEffect.SpeedFactor * 1);
             }
         }
 
