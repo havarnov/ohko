@@ -66,6 +66,9 @@ public class StateManager<TState>(TState initialState)
             {
                 return new FrameConfiguration
                 {
+                    Effects = (currentFrame?.Effects ?? [])
+                            .Concat(all?.Effects ?? [])
+                            .ToList(),
                     Boxes = (currentFrame?.Boxes ?? [])
                         .Concat(all?.Boxes ?? [])
                         .Select(b => b switch
@@ -205,6 +208,14 @@ public class Hero : IEntity
         if (_comboQueue.TryDequeue(out var combo))
         {
             _stateManager.CurrentState = combo;
+        }
+
+        foreach (var effect in  _stateManager.CurrentFrameConfiguration?.Effects ?? [])
+        {
+            if (effect is Effect.MoveEffect moveEffect)
+            {
+                _stateManager.Position += (moveEffect.Vector * moveEffect.SpeedFactor * 1);
+            }
         }
 
         _stateManager.Update(gameTime);

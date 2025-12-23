@@ -22,6 +22,16 @@
               }
             }
           ]
+        },
+        "0": {
+          "boxes": [],
+          "effects": [
+            {
+              "type": "MoveEffect",
+              "vector": [-1, -3],
+              "speedFactor": 1
+            }
+          ]
         }
       }
     },
