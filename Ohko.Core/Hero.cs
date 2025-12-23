@@ -14,6 +14,8 @@ namespace Ohko.Core;
 public class StateManager<TState>(TState initialState)
     where TState : struct, Enum
 {
+    public Vector2 Position { get; set; }
+
     public TState CurrentState
     {
         get => field;
@@ -53,21 +55,38 @@ public class StateManager<TState>(TState initialState)
     }
 
     private StateInfo CurrentStateInfo => _states[CurrentState];
-    private FrameConfiguration CurrentFrameConfiguration
+    public FrameConfiguration? CurrentFrameConfiguration
     {
         get
         {
-            var current = CurrentStateInfo.AnimationStartFrame - CurrentStateInfo.Animation.CurrentFrame.FrameIndex;
+            var current = CurrentStateInfo.Animation.CurrentFrame.FrameIndex - CurrentStateInfo.AnimationStartFrame;
             if ((CurrentStateInfo.Frames.Count - 1) >= current)
             {
-                return CurrentStateInfo.Frames[current];
+                var x = CurrentStateInfo.Frames[current];
+                return new FrameConfiguration
+                {
+                    Boxes = x.Boxes
+                        .Select(b => b switch
+                        {
+                            Box.CollisionBox collisionBox => (Box)new Box.CollisionBox()
+                            {
+                                CollisionTag = collisionBox.CollisionTag,
+                                Rectangle = new Rectangle(
+                                    (Position
+                                     - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size
+                                         .ToVector2() / 2))
+                                    .ToPoint()
+                                    + collisionBox.Rectangle.Location,
+                                    collisionBox.Rectangle.Size),
+                            },
+                            _ => throw new ArgumentOutOfRangeException(nameof(b))
+                        })
+                        .ToList(),
+                };
             }
             else
             {
-                return new FrameConfiguration
-                {
-                    Boxes = []
-                };
+                return null;
             }
         }
     }
@@ -123,9 +142,9 @@ public class StateManager<TState>(TState initialState)
         _states[CurrentState].Animation.Update(gameTime);
     }
 
-    public void Draw(SpriteBatch spriteBatch, Vector2 position)
+    public void Draw(SpriteBatch spriteBatch)
     {
-        var spritePosition = position - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
+        var spritePosition = Position - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
         spriteBatch.Draw(
             _states[CurrentState].Animation.TextureRegion,
             spritePosition,
@@ -138,23 +157,23 @@ public class StateManager<TState>(TState initialState)
     }
 }
 
-public class Hero
+public class Hero : IEntity
 {
     private readonly StateManager<State> _stateManager = new StateManager<State>(State.Idle);
     private readonly Queue<State>_comboQueue = new();
     private GraphicsDevice _graphicsDevice = null!;
 
-    public Vector2 Position { get; set; }
+    public Vector2 Position
+    {
+        get => _stateManager.Position;
+        set => _stateManager.Position = value;
+    }
 
     private readonly bool facingLeft;
 
     public Hero()
     {
         facingLeft = false;
-    }
-
-    private void UpdateBoxes()
-    {
     }
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
@@ -173,7 +192,10 @@ public class Hero
 
     public void Update(GameTime gameTime)
     {
-        UpdateBoxes();
+        if (!isGrounded)
+        {
+            _stateManager.Position = new Vector2(_stateManager.Position.X, _stateManager.Position.Y + (float)(100f * gameTime.ElapsedGameTime.TotalSeconds));
+        }
 
         if (_comboQueue.TryDequeue(out var combo))
         {
@@ -181,11 +203,29 @@ public class Hero
         }
 
         _stateManager.Update(gameTime);
+
+        // Assume not grounded, will be updated on collision tests.
+        isGrounded = false;
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        _stateManager.Draw(spriteBatch, Position);
+        _stateManager.Draw(spriteBatch);
+    }
+
+    public List<Box> Boxes => _stateManager.CurrentFrameConfiguration?.Boxes ?? [];
+
+    public void OnCollision(IEntity otherEntity, Box own, Box other)
+    {
+        if (own is Box.CollisionBox
+            && other is Box.CollisionBox { CollisionTag: "Collision_1" })
+        {
+            isGrounded = true;
+            if (_stateManager.CurrentState != State.Idle)
+            {
+                Console.WriteLine("her");
+            }
+        }
     }
 
     public enum State
@@ -267,4 +307,6 @@ public class Hero
 
         return result;
     }
+
+    private bool isGrounded = false;
 }

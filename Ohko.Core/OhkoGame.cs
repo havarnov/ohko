@@ -13,6 +13,7 @@ public class OhkoGame : Game
     private ControlPad _controlPad = null!;
     private SpriteBatch _spriteBatch = null!;
     private Hero _hero = null!;
+    private EntityManager _entityManager = new();
     private LevelManager _levelManager = null!;
     private Camera camera = null!;
 
@@ -41,11 +42,12 @@ public class OhkoGame : Game
         var worldFile = LDtkFile.FromFile("ohko.ldtk");
 
         _hero = new Hero();
+        _entityManager.Add(_hero);
         _controlPad = new ControlPad(_hero);
 
         base.Initialize();
 
-        _levelManager = new LevelManager(worldFile);
+        _levelManager = new LevelManager(worldFile, _entityManager);
         _levelManager.Load("Level1", GraphicsDevice, _spriteBatch, Content);
 
         camera = new Camera(GraphicsDevice);
@@ -56,21 +58,22 @@ public class OhkoGame : Game
         camera.Position = (_levelManager.Level.Position + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y - unscaledYOffset / camera.Zoom).ToPoint()).ToVector2();
         _hero.Position = (_levelManager.Level.Position
                           + new Vector2(_levelManager.Level.Size.X / 2f, _levelManager.Level.Size.Y / 2f).ToPoint()
-                          + new Point(0, 16 * 4)
+                          // + new Point(0, 16 * 4)
                           ).ToVector2();
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        _controlPad.LoadContent(Content, _graphics.GraphicsDevice);
+        _controlPad.LoadContent(Content, GraphicsDevice);
+        _entityManager.LoadContent(Content, GraphicsDevice);
         _hero.LoadContent(Content, GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)
     {
         _controlPad.Update(_gameBounds);
-        _hero.Update(gameTime);
+        _entityManager.Update(gameTime);
         camera.Position = new Vector2(_hero.Position.X, camera.Position.Y);
         camera.Update();
         base.Update(gameTime);
@@ -82,7 +85,7 @@ public class OhkoGame : Game
 
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, null, SamplerState.PointClamp, transformMatrix: camera.Transform);
 
-        _hero.Draw(_spriteBatch);
+        _entityManager.Draw(_spriteBatch);
 
         _spriteBatch.End();
 

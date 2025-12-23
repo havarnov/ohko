@@ -8,12 +8,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Ohko.Core;
 
-internal class LevelManager(LDtkFile lDtkFile)
+public class Collision : IEntity
+{
+    public required List<Box> Boxes { get; init; }
+}
+
+internal class LevelManager(LDtkFile lDtkFile, EntityManager entityManager)
 {
     private LdtkRenderer renderer = null!;
     private LDtkWorld? world;
     public LDtkLevel Level { get; private set; } = null!;
-    public List<Rectangle> CollisionBoxes = [];
 
     public void Load(
         string levelName,
@@ -35,16 +39,28 @@ internal class LevelManager(LDtkFile lDtkFile)
         {
             for (int j = 0; j < collisions.GridSize.Y; j++)
             {
-                if (collisions.GetValueAt(i, j) == 0)
+                var value = collisions.GetValueAt(i, j);
+                if (value == 0)
                 {
                     continue;
                 }
 
-                CollisionBoxes.Add(new Rectangle(
-                    collisions.WorldPosition.X + (i * collisions.TileSize),
-                    collisions.WorldPosition.Y + (j * collisions.TileSize),
-                    collisions.TileSize,
-                    collisions.TileSize));
+                entityManager.Add(new Collision
+                {
+                    Boxes =
+                    [
+                        new Box.CollisionBox()
+                        {
+
+                            Rectangle = new Rectangle(
+                                collisions.WorldPosition.X + (i * collisions.TileSize),
+                                collisions.WorldPosition.Y + (j * collisions.TileSize),
+                                collisions.TileSize,
+                                collisions.TileSize),
+                            CollisionTag = $"Collision_{value}"
+                        }
+                    ],
+                });
             }
         }
 

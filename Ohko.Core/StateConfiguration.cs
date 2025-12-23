@@ -43,7 +43,10 @@ public abstract class Box
     [JsonConverter(typeof(RectangleJsonConverter))]
     public required Rectangle Rectangle { get; init; }
 
-    public class CollisionBox : Box;
+    public class CollisionBox : Box
+    {
+        public string CollisionTag { get; init; }
+    }
 }
 
 internal class RectangleJsonConverter : JsonConverter<Rectangle>
