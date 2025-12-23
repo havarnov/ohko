@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text.Json.Serialization;
+using System.Text.Json;
+using AsepriteDotNet.Aseprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,115 +12,40 @@ using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
-[JsonDerivedType(typeof(HurtBox), typeDiscriminator: nameof(HurtBox))]
-[JsonDerivedType(typeof(CollisionBox), typeDiscriminator: nameof(CollisionBox))]
-[JsonDerivedType(typeof(HitBox), typeDiscriminator: nameof(HitBox))]
-public abstract class AnimationBoxData
+public class StateManager<TState>(TState initialState)
+    where TState : struct, Enum
 {
-    private AnimationBoxData()
+    public TState CurrentState
     {
-    }
-
-    public class HitBox : AnimationBoxData;
-
-    public class HurtBox : AnimationBoxData
-    {
-        [JsonPropertyName("damage_multiplier")]
-        public required float DamageMultiplier { get; init; }
-    }
-
-    public class CollisionBox : AnimationBoxData;
-}
-
-public class Hero
-{
-    private readonly Dictionary<State, AnimatedSpriteExtended<AnimationBoxData>> _animations = new();
-
-    private AnimatedSpriteExtended<AnimationBoxData> _currentAnimation => _animations[CurrentState];
-    private readonly Queue<State>_comboQueue = new();
-
-    public Vector2 Position
-    {
-        get => body.Position.ToVector2();
-        set => body.Position = value.ToVector2();
-    }
-
-    private readonly Body body;
-
-    public Hero(World world)
-    {
-        body = world.CreateBody(Vector2.Zero.ToVector2(), bodyType: BodyType.Dynamic);
-        body.FixedRotation = true;
-    }
-
-    private void UpdateBoxes()
-    {
-        foreach (var fixture in body.FixtureList.ToList())
-        {
-            body.Remove(fixture);
-        }
-
-        foreach (var key in _currentAnimation.CurrentSliceKeys)
-        {
-            var density = key.UserData is AnimationBoxData.CollisionBox
-                ? 1f
-                : 0f;
-            // var center = _currentAnimation.AnimatedSprite.TextureRegion.Bounds.Center;
-            var center = new Point(16, 16);
-            var xx = key.SliceKey.Bounds.X + key.SliceKey.Bounds.Width / 2f;
-            var yy = key.SliceKey.Bounds.Y + key.SliceKey.Bounds.Height / 2f;
-            var fixture = body.CreateRectangle(
-                key.SliceKey.Bounds.Width,
-                key.SliceKey.Bounds.Height,
-                density,
-                offset: new nkast.Aether.Physics2D.Common.Vector2(xx - center.X, yy - center.Y));
-            fixture.Tag = key.SliceName;
-
-            if (key.UserData is AnimationBoxData.HurtBox)
-            {
-                fixture.CollidesWith = Category.Cat3;
-                fixture.CollisionCategories = Category.Cat2;
-            }
-            else if (key.UserData is AnimationBoxData.HitBox)
-            {
-                fixture.CollidesWith = Category.Cat2;
-                fixture.CollisionCategories = Category.Cat3;
-            }
-            else
-            {
-                fixture.CollidesWith = Category.Cat1;
-            }
-        }
-    }
-
-    public State CurrentState
-    {
-        get;
-
+        get => field;
         set
         {
-            if (field != value && field != State.Unknown)
+            if (Enum.IsDefined(field))
             {
-                _animations[field].AnimatedSprite.Stop();
-                _animations[field].AnimatedSprite.Reset();
+                var previousStateInfo = _states[field];
+                previousStateInfo.Animation.Stop();
+                previousStateInfo.Animation.Reset();
             }
 
             field = value;
-            _animations[field].AnimatedSprite.Play();
+            var stateInfo = _states[field];
+            stateInfo.Animation.Stop();
+            stateInfo.Animation.Reset();
 
-            if (_continuation.TryGetValue(field, out var continuation))
+            stateInfo.Animation.Play();
+
+            if (stateInfo.AutomaticContinuation is not null)
             {
-                _currentAnimation.AnimatedSprite.OnAnimationBegin += _ =>
+                stateInfo.Animation.OnAnimationBegin += _ =>
                 {
-                    var start = _currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex;
-                    var count = _currentAnimation.AnimatedSprite.FrameCount;
+                    var start = stateInfo.Animation.CurrentFrame.FrameIndex;
+                    var count = stateInfo.Animation.FrameCount;
                     var end = start + count - 1;
-                    _currentAnimation.AnimatedSprite.OnFrameBegin += _ =>
+                    stateInfo.Animation.OnFrameBegin += _ =>
                     {
-                        if (_currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex == end)
+                        if (stateInfo.Animation.CurrentFrame.FrameIndex == end)
                         {
-                            CurrentState = continuation;
+                            CurrentState = stateInfo.AutomaticContinuation.Value;
                         }
                     };
                 };
@@ -126,51 +53,124 @@ public class Hero
         }
     }
 
-    private readonly Dictionary<State, State> _continuation = new()
+    private StateInfo CurrentStateInfo => _states[CurrentState];
+    private FrameConfiguration CurrentFrameConfiguration
     {
-        { State.PunchACharge, State.PunchA },
-        { State.PunchA, State.Idle },
-        { State.PunchBCharge, State.PunchB },
-        { State.PunchB, State.Idle },
-        { State.PunchCCharge, State.PunchC },
-        { State.PunchC, State.Idle },
-        { State.KickACharge, State.KickA },
-        { State.KickA, State.Idle },
-        { State.Back, State.Idle },
-    };
+        get
+        {
+            var current = CurrentStateInfo.AnimationStartFrame - CurrentStateInfo.Animation.CurrentFrame.FrameIndex;
+            if ((CurrentStateInfo.Frames.Count - 1) >= current)
+            {
+                return CurrentStateInfo.Frames[current];
+            }
+            else
+            {
+                return new FrameConfiguration
+                {
+                    Boxes = []
+                };
+            }
+        }
+    }
 
-    private readonly Dictionary<(State, State), Vector2> effects = new()
+    private readonly Dictionary<TState, StateInfo> _states = new();
+
+    public void Load(ContentManager content, GraphicsDevice graphicsDevice)
     {
-        { (State.KickACharge, State.KickA), new Vector2(1f, -4f) },
-        { (State.Idle, State.Back), new Vector2(-1f, -2f) },
-    };
+        var statesConfiguration = JsonSerializer.Deserialize<StatesConfiguration>(
+            File.ReadAllText("Content/states.json"),
+            new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true,
+            })
+            ?? throw new InvalidOperationException();
+
+        foreach (var state in Enum.GetValues<TState>())
+        {
+            if (!statesConfiguration.States.TryGetValue(state.ToString(), out var stateConfig))
+            {
+                throw new InvalidOperationException();
+            }
+
+            var file = content.Load<AsepriteFile>(stateConfig.AnimationName);
+            var spriteSheet = file.CreateSpriteSheet(graphicsDevice, onlyVisibleLayers: true);
+            var animatedSprite = spriteSheet.CreateAnimatedSprite(stateConfig.AnimationTag);
+            var stateInfo = new StateInfo()
+            {
+                Animation = animatedSprite,
+                AnimationStartFrame = animatedSprite.CurrentFrame.FrameIndex,
+                Frames = stateConfig.Frames
+                    .ToDictionary(kv => int.Parse(kv.Key), kv => kv.Value),
+                AutomaticContinuation = stateConfig.AutomaticContinuation is not null
+                    ? Enum.Parse<TState>(stateConfig.AutomaticContinuation)
+                    : null,
+            };
+            _states.Add(state, stateInfo);
+        }
+
+        CurrentState = initialState;
+    }
+
+    private class StateInfo
+    {
+        public required AnimatedSprite Animation { get; init; }
+        public required int AnimationStartFrame { get; init; }
+        public required Dictionary<int, FrameConfiguration> Frames { get; init; }
+        public required TState? AutomaticContinuation { get; init; }
+    }
+
+    public void Update(GameTime gameTime)
+    {
+        _states[CurrentState].Animation.Update(gameTime);
+    }
+
+    public void Draw(SpriteBatch spriteBatch, Vector2 position)
+    {
+        var spritePosition = position - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
+        spriteBatch.Draw(
+            _states[CurrentState].Animation.TextureRegion,
+            spritePosition,
+            _states[CurrentState].Animation.Color * _states[CurrentState].Animation.Transparency,
+            _states[CurrentState].Animation.Rotation,
+            Vector2.Zero,
+            _states[CurrentState].Animation.Scale,
+            _states[CurrentState].Animation.SpriteEffects,
+            layerDepth: 0.8f);
+    }
+}
+
+public class Hero
+{
+    private readonly StateManager<State> _stateManager = new StateManager<State>(State.Idle);
+    private readonly Queue<State>_comboQueue = new();
+    private GraphicsDevice _graphicsDevice = null!;
+
+    public Vector2 Position { get; set; }
+
+    private readonly bool facingLeft;
+
+    public Hero(World world)
+    {
+        facingLeft = false;
+    }
+
+    private void UpdateBoxes()
+    {
+    }
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
     {
-        _animations[State.Idle] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kIdle", content, graphicsDevice);
-        _animations[State.PunchACharge] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchA_charge", content, graphicsDevice);
-        _animations[State.PunchA] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchA_hit", content, graphicsDevice);
-        _animations[State.PunchBCharge] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchB_charge", content, graphicsDevice);
-        _animations[State.PunchB] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchB_hit", content, graphicsDevice);
-        _animations[State.PunchCCharge] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchC_charge", content, graphicsDevice);
-        _animations[State.PunchC] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kPunchC_hit", content, graphicsDevice);
-        _animations[State.KickACharge] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kKickA_charge", content, graphicsDevice);
-        _animations[State.KickA] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kKickA_hit", content, graphicsDevice);
-        _animations[State.Back] =
-            new AnimatedSpriteExtended<AnimationBoxData>("entities", "kHit", content, graphicsDevice);
-        CurrentState = State.Idle;
-    }
+        var states = JsonSerializer.Deserialize<StatesConfiguration>(
+            File.ReadAllText("Content/states.json"),
+            new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true,
+            });
 
-    private State lastState = State.Unknown;
+        _graphicsDevice = graphicsDevice;
+
+        _stateManager.Load(content, graphicsDevice);
+    }
 
     public void Update(GameTime gameTime)
     {
@@ -178,40 +178,19 @@ public class Hero
 
         if (_comboQueue.TryDequeue(out var combo))
         {
-            CurrentState = combo;
+            _stateManager.CurrentState = combo;
         }
 
-        if (effects.TryGetValue((lastState, CurrentState), out var effect))
-        {
-            float jumpSpeed = 240f;
-            float jumpImpulse = body.Mass * jumpSpeed;
-            effect.Normalize();
-            var effectImpulse = effect *  jumpImpulse;
-            body.ApplyLinearImpulse(effectImpulse.ToVector2());
-        }
-
-        lastState = CurrentState;
-
-        _currentAnimation.AnimatedSprite.Update(gameTime);
+        _stateManager.Update(gameTime);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var spritePosition = Position - (_currentAnimation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
-        spriteBatch.Draw(
-            _currentAnimation.AnimatedSprite.TextureRegion,
-            spritePosition,
-            _currentAnimation.AnimatedSprite.Color * _currentAnimation.AnimatedSprite.Transparency,
-            _currentAnimation.AnimatedSprite.Rotation,
-            Vector2.Zero,
-            _currentAnimation.AnimatedSprite.Scale,
-            _currentAnimation.AnimatedSprite.SpriteEffects,
-            layerDepth: 1);
+        _stateManager.Draw(spriteBatch, Position);
     }
 
     public enum State
     {
-        Unknown = 0,
         Idle = 1,
         PunchACharge = 2,
         PunchA = 3,
