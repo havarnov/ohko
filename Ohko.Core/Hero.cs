@@ -11,7 +11,7 @@ using MonoGame.Aseprite;
 
 namespace Ohko.Core;
 
-public class StateManager<TState>(TState initialState)
+public class StateManager<TState>(TState initialState, bool isFacingLeft)
     where TState : struct, Enum
 {
     public Vector2 Position { get; set; }
@@ -30,6 +30,7 @@ public class StateManager<TState>(TState initialState)
 
             field = value;
             var stateInfo = _states[field];
+            stateInfo.Animation.FlipHorizontally = isFacingLeft;
             stateInfo.Animation.Stop();
             stateInfo.Animation.Reset();
 
@@ -68,6 +69,14 @@ public class StateManager<TState>(TState initialState)
                 {
                     Effects = (currentFrame?.Effects ?? [])
                             .Concat(all?.Effects ?? [])
+                            .Select(i => i switch {
+                                Effect.MoveEffect moveEffect => (Effect)new Effect.MoveEffect()
+                                {
+                                    SpeedFactor = moveEffect.SpeedFactor,
+                                    Vector = moveEffect.Vector * new Vector2(isFacingLeft ? -1 : 1, 1),
+                                },
+                                _ => throw new ArgumentOutOfRangeException(nameof(i))
+                            })
                             .ToList(),
                     Boxes = (currentFrame?.Boxes ?? [])
                         .Concat(all?.Boxes ?? [])
@@ -167,7 +176,7 @@ public class StateManager<TState>(TState initialState)
 
 public class Hero : IEntity
 {
-    private readonly StateManager<State> _stateManager = new StateManager<State>(State.Idle);
+    private readonly StateManager<State> _stateManager = new(State.Idle, isFacingLeft: false);
     private readonly Queue<State>_comboQueue = new();
     private GraphicsDevice _graphicsDevice = null!;
 
@@ -175,13 +184,6 @@ public class Hero : IEntity
     {
         get => _stateManager.Position;
         set => _stateManager.Position = value;
-    }
-
-    private readonly bool facingLeft;
-
-    public Hero()
-    {
-        facingLeft = false;
     }
 
     public void LoadContent(ContentManager content, GraphicsDevice graphicsDevice)
