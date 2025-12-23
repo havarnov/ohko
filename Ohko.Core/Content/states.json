@@ -4,61 +4,250 @@
       "animationName": "entities",
       "animationTag": "kHit",
       "automaticContinuation": "Idle",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "KickACharge": {
       "animationName": "entities",
       "animationTag": "kKickA_charge",
       "automaticContinuation": "KickA",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "KickA": {
       "animationName": "entities",
       "animationTag": "kKickA_hit",
       "automaticContinuation": "Idle",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchCCharge": {
       "animationName": "entities",
       "animationTag": "kPunchC_charge",
       "automaticContinuation": "PunchC",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchC": {
       "animationName": "entities",
       "animationTag": "kPunchC_hit",
       "automaticContinuation": "Idle",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchBCharge": {
       "animationName": "entities",
       "animationTag": "kPunchB_charge",
       "automaticContinuation": "PunchB",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchB": {
       "animationName": "entities",
       "animationTag": "kPunchB_hit",
       "automaticContinuation": "Idle",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchACharge": {
       "animationName": "entities",
       "animationTag": "kPunchA_charge",
       "automaticContinuation": "PunchA",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "PunchA": {
       "animationName": "entities",
       "animationTag": "kPunchA_hit",
       "automaticContinuation": "Idle",
-      "frames": {}
+      "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     "Idle": {
       "animationName": "entities",
       "animationTag": "kIdle",
       "automaticContinuation": null,
       "frames": {
+        "all": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "collisionTag": "wall",
+              "rectangle": {
+                "location": [
+                  7,
+                  7
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ]
+        },
         "0": {
           "boxes": [
             {

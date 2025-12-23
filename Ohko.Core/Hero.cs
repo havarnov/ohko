@@ -60,12 +60,14 @@ public class StateManager<TState>(TState initialState)
         get
         {
             var current = CurrentStateInfo.Animation.CurrentFrame.FrameIndex - CurrentStateInfo.AnimationStartFrame;
-            if ((CurrentStateInfo.Frames.Count - 1) >= current)
+            var all = CurrentStateInfo.AllFrames;
+            var currentFrame = CurrentStateInfo.Frames.GetValueOrDefault(current);
+            if (all is not null || currentFrame is not null)
             {
-                var x = CurrentStateInfo.Frames[current];
                 return new FrameConfiguration
                 {
-                    Boxes = x.Boxes
+                    Boxes = (currentFrame?.Boxes ?? [])
+                        .Concat(all?.Boxes ?? [])
                         .Select(b => b switch
                         {
                             Box.CollisionBox collisionBox => (Box)new Box.CollisionBox()
@@ -118,7 +120,9 @@ public class StateManager<TState>(TState initialState)
                 Animation = animatedSprite,
                 AnimationStartFrame = animatedSprite.CurrentFrame.FrameIndex,
                 Frames = stateConfig.Frames
+                    .Where(kv => kv.Key != "all")
                     .ToDictionary(kv => int.Parse(kv.Key), kv => kv.Value),
+                AllFrames = stateConfig.Frames.GetValueOrDefault("all"),
                 AutomaticContinuation = stateConfig.AutomaticContinuation is not null
                     ? Enum.Parse<TState>(stateConfig.AutomaticContinuation)
                     : null,
@@ -135,6 +139,7 @@ public class StateManager<TState>(TState initialState)
         public required int AnimationStartFrame { get; init; }
         public required Dictionary<int, FrameConfiguration> Frames { get; init; }
         public required TState? AutomaticContinuation { get; init; }
+        public FrameConfiguration? AllFrames { get; set; }
     }
 
     public void Update(GameTime gameTime)
@@ -217,14 +222,10 @@ public class Hero : IEntity
 
     public void OnCollision(IEntity otherEntity, Box own, Box other)
     {
-        if (own is Box.CollisionBox
+        if (own is Box.CollisionBox { CollisionTag: "wall", }
             && otherEntity is Collision { IsGround: true})
         {
             isGrounded = true;
-            if (_stateManager.CurrentState != State.Idle)
-            {
-                Console.WriteLine("her");
-            }
         }
     }
 
