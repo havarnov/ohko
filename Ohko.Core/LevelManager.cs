@@ -1,20 +1,13 @@
 using System;
-using System.Collections.Generic;
 using LDtk;
 using LDtkTypes;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-public class Collision : IEntity
-{
-    public bool IsGround { get; init; }
-    public required List<Box> Boxes { get; init; }
-}
-
-internal class LevelManager(LDtkFile lDtkFile, EntityManager entityManager)
+internal class LevelManager(LDtkFile lDtkFile, World physicsWorld)
 {
     private LdtkRenderer renderer = null!;
     private LDtkWorld? world;
@@ -46,23 +39,16 @@ internal class LevelManager(LDtkFile lDtkFile, EntityManager entityManager)
                     continue;
                 }
 
-                entityManager.Add(new Collision
-                {
-                    IsGround = value == 1,
-                    Boxes =
-                    [
-                        new Box.CollisionBox()
-                        {
-
-                            Rectangle = new Rectangle(
-                                collisions.WorldPosition.X + (i * collisions.TileSize),
-                                collisions.WorldPosition.Y + (j * collisions.TileSize),
-                                collisions.TileSize,
-                                collisions.TileSize),
-                            CollisionTag = $"Collision_{value}"
-                        }
-                    ],
-                });
+                var wall = physicsWorld.CreateRectangle(
+                        collisions.TileSize,
+                        collisions.TileSize,
+                        1f,
+                        new nkast.Aether.Physics2D.Common.Vector2(collisions.WorldPosition.X, collisions.WorldPosition.Y)
+                        + new nkast.Aether.Physics2D.Common.Vector2((i * collisions.TileSize) + (collisions.TileSize / 2f), (j * collisions.TileSize) + (collisions.TileSize / 2f)),
+                        0f,
+                        BodyType.Static);
+                wall.FixedRotation = true;
+                wall.FixtureList[0].Friction = 0f;
             }
         }
 

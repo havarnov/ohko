@@ -8,13 +8,19 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Aseprite;
+using nkast.Aether.Physics2D.Collision.Shapes;
+using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
-public class StateManager<TState>(TState initialState, bool isFacingLeft)
+public class StateManager<TState>(TState initialState, bool isFacingLeft, Body body)
     where TState : struct, Enum
 {
-    public Vector2 Position { get; set; }
+    public Vector2 Position
+    {
+        get => body.Position.Into();
+        set => body.Position = value.Into();
+    }
 
     public TState CurrentState
     {
@@ -30,6 +36,26 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft)
 
             field = value;
             var stateInfo = _states[field];
+            stateInfo.Animation.OnFrameBegin += _ =>
+            {
+                foreach (var fixture in body.FixtureList.ToArray())
+                {
+                    body.Remove(fixture);
+                }
+
+                foreach (var box in CurrentFrameConfiguration?.Boxes ?? [])
+                {
+                    if (box is Box.CollisionBox { CollisionTag: "wall" } collisionBox)
+                    {
+                        body.CreateRectangle(
+                            collisionBox.Rectangle.Size.X,
+                            collisionBox.Rectangle.Size.Y,
+                            1f,
+                            Vector2.Zero.Into());
+                    }
+                }
+            };
+
             stateInfo.Animation.FlipHorizontally = isFacingLeft;
             stateInfo.Animation.Stop();
             stateInfo.Animation.Reset();
@@ -80,21 +106,21 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft)
                             .ToList(),
                     Boxes = (currentFrame?.Boxes ?? [])
                         .Concat(all?.Boxes ?? [])
-                        .Select(b => b switch
-                        {
-                            Box.CollisionBox collisionBox => (Box)new Box.CollisionBox()
-                            {
-                                CollisionTag = collisionBox.CollisionTag,
-                                Rectangle = new Rectangle(
-                                    (Position
-                                     - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size
-                                         .ToVector2() / 2))
-                                    .ToPoint()
-                                    + collisionBox.Rectangle.Location,
-                                    collisionBox.Rectangle.Size),
-                            },
-                            _ => throw new ArgumentOutOfRangeException(nameof(b))
-                        })
+                        // .Select(b => b switch
+                        // {
+                        //     Box.CollisionBox collisionBox => (Box)new Box.CollisionBox()
+                        //     {
+                        //         CollisionTag = collisionBox.CollisionTag,
+                        //         Rectangle = new Rectangle(
+                        //             (Position
+                        //              - (_states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size
+                        //                  .ToVector2() / 2))
+                        //             .ToPoint()
+                        //             + collisionBox.Rectangle.Location,
+                        //             collisionBox.Rectangle.Size),
+                        //     },
+                        //     _ => throw new ArgumentOutOfRangeException(nameof(b))
+                        // })
                         .ToList(),
                 };
             }
@@ -174,9 +200,29 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft)
     }
 }
 
+public static class Vector2Extensions
+{
+    public static Vector2 Into(this nkast.Aether.Physics2D.Common.Vector2 vector)
+    {
+        return new Vector2(vector.X, vector.Y);
+    }
+
+    public static nkast.Aether.Physics2D.Common.Vector2 Into(this Vector2 vector)
+    {
+        return new nkast.Aether.Physics2D.Common.Vector2(vector.X, vector.Y);
+    }
+}
+
 public class Hero : IEntity
 {
-    private readonly StateManager<State> _stateManager = new(State.Idle, isFacingLeft: false);
+    public Hero(World world)
+    {
+        var body = world.CreateBody(Vector2.Zero.Into(), 0f, BodyType.Dynamic);
+        body.FixedRotation = true;
+        _stateManager = new(State.Idle, isFacingLeft: false, body);
+    }
+
+    private readonly StateManager<State> _stateManager;
     private readonly Queue<State>_comboQueue = new();
     private GraphicsDevice _graphicsDevice = null!;
 
@@ -204,7 +250,6 @@ public class Hero : IEntity
     {
         if (!isGrounded)
         {
-            _stateManager.Position = new Vector2(_stateManager.Position.X, _stateManager.Position.Y + (float)(100f * gameTime.ElapsedGameTime.TotalSeconds));
         }
 
         if (_comboQueue.TryDequeue(out var combo))
@@ -212,6 +257,7 @@ public class Hero : IEntity
             _stateManager.CurrentState = combo;
         }
 
+        bool anyEffects = false;
         foreach (var effect in  _stateManager.CurrentFrameConfiguration?.Effects ?? [])
         {
             if (effect is Effect.MoveEffect moveEffect)
@@ -219,7 +265,13 @@ public class Hero : IEntity
                 var vector = moveEffect.Vector;
                 vector.Normalize();
                 _stateManager.Position += (vector * moveEffect.SpeedFactor * 1);
+                anyEffects = true;
             }
+        }
+
+        if (!anyEffects)
+        {
+            _stateManager.Position = new Vector2(_stateManager.Position.X, _stateManager.Position.Y + (float)(50f * gameTime.ElapsedGameTime.TotalSeconds));
         }
 
         _stateManager.Update(gameTime);
@@ -237,11 +289,6 @@ public class Hero : IEntity
 
     public void OnCollision(IEntity otherEntity, Box own, Box other)
     {
-        if (own is Box.CollisionBox { CollisionTag: "wall", }
-            && otherEntity is Collision { IsGround: true})
-        {
-            isGrounded = true;
-        }
     }
 
     public enum State

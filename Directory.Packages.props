@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Aether.Physics2D" Version="2.2.0" />
     <PackageVersion Include="Gum.MonoGame" Version="2025.12.9.1" />
     <PackageVersion Include="LDtkMonogame" Version="1.8.1" />
     <PackageVersion Include="MonoGame.Aseprite" Version="6.3.1" />

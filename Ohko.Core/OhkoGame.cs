@@ -1,6 +1,8 @@
 using LDtk;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using nkast.Aether.Physics2D.Collision.Shapes;
+using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
 
@@ -16,6 +18,7 @@ public class OhkoGame : Game
     private EntityManager _entityManager = new();
     private LevelManager _levelManager = null!;
     private Camera camera = null!;
+    private World _physicsWorld = null!;
 
     public OhkoGame(bool isFullScreen)
     {
@@ -41,13 +44,18 @@ public class OhkoGame : Game
     {
         var worldFile = LDtkFile.FromFile("ohko.ldtk");
 
-        _hero = new Hero();
+        _physicsWorld = new World()
+        {
+            Gravity = Vector2.Zero.Into(),
+        };
+
+        _hero = new Hero(_physicsWorld);
         _entityManager.Add(_hero);
         _controlPad = new ControlPad(_hero);
 
         base.Initialize();
 
-        _levelManager = new LevelManager(worldFile, _entityManager);
+        _levelManager = new LevelManager(worldFile, _physicsWorld);
         _levelManager.Load("Level1", GraphicsDevice, _spriteBatch, Content);
 
         camera = new Camera(GraphicsDevice);
@@ -72,6 +80,7 @@ public class OhkoGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
         _controlPad.Update(_gameBounds);
         _entityManager.Update(gameTime);
         camera.Position = new Vector2(_hero.Position.X, camera.Position.Y);
@@ -86,6 +95,27 @@ public class OhkoGame : Game
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, null, SamplerState.PointClamp, transformMatrix: camera.Transform);
 
         _entityManager.Draw(_spriteBatch);
+        // foreach (var body in _physicsWorld.BodyList)
+        // {
+        //     if (body.FixtureList[0].Shape is PolygonShape s)
+        //     {
+        //         var _texture = new Texture2D(GraphicsDevice, 1, 1);
+        //         _texture.SetData([Color.Blue]);
+        //         var aabb = s.Vertices.GetAABB();
+        //         _spriteBatch.Draw(
+        //             _texture,
+        //             new Rectangle(
+        //                 new Point((int)(body.Position.X - aabb.Extents.X), (int)(body.Position.Y - aabb.Extents.Y)),
+        //                 new Point((int)s.Vertices.GetAABB().Extents.X * 2,
+        //                     (int)s.Vertices.GetAABB().Extents.Y * 2)),
+        //             sourceRectangle: null,
+        //             Color.White,
+        //             rotation: 0,
+        //             origin: Vector2.Zero,
+        //             effects: SpriteEffects.None,
+        //             layerDepth: 0.99f);
+        //     }
+        // }
 
         _spriteBatch.End();
 
