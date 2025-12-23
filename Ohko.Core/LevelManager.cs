@@ -10,6 +10,7 @@ namespace Ohko.Core;
 
 public class Collision : IEntity
 {
+    public bool IsGround { get; init; }
     public required List<Box> Boxes { get; init; }
 }
 
@@ -47,6 +48,7 @@ internal class LevelManager(LDtkFile lDtkFile, EntityManager entityManager)
 
                 entityManager.Add(new Collision
                 {
+                    IsGround = value == 1,
                     Boxes =
                     [
                         new Box.CollisionBox()

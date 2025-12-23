@@ -218,7 +218,7 @@ public class Hero : IEntity
     public void OnCollision(IEntity otherEntity, Box own, Box other)
     {
         if (own is Box.CollisionBox
-            && other is Box.CollisionBox { CollisionTag: "Collision_1" })
+            && otherEntity is Collision { IsGround: true})
         {
             isGrounded = true;
             if (_stateManager.CurrentState != State.Idle)
