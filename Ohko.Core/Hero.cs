@@ -146,8 +146,14 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
 
     private readonly Dictionary<TState, StateInfo> _states = new();
 
+    private Texture2D _whitePixel = null!;
+
     public void Load(ContentManager content, GraphicsDevice graphicsDevice)
     {
+
+        _whitePixel = new Texture2D(graphicsDevice, 1, 1);
+        _whitePixel.SetData([Color.White]);
+
         var statesConfiguration = JsonSerializer.Deserialize<StatesConfiguration>(
             File.ReadAllText("Content/states.json"),
             new JsonSerializerOptions()
@@ -219,6 +225,46 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
             _states[CurrentState].Animation.Scale,
             _states[CurrentState].Animation.SpriteEffects,
             layerDepth: 0.8f);
+
+        foreach (var box in CurrentFrameConfiguration?.Boxes ?? [])
+        {
+            var size = _states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size;
+            var offset = size.ToVector2() / 2f;
+            offset = new Vector2((float)Math.Ceiling(offset.X), (float)Math.Floor(offset.Y));
+
+            var location = _isFacingLeft
+                ? new Point(size.X - box.Rectangle.Location.X - box.Rectangle.Size.X, box.Rectangle.Location.Y)
+                : box.Rectangle.Location;
+
+            var position = (Position - offset);
+            position.Round();
+            var boxRectangle = new Rectangle(
+                position.ToPoint()
+                + location,
+                box.Rectangle.Size);
+
+            var color = box switch {
+                Box.CollisionBox => Color.Red,
+                _ => Color.White,
+            };
+
+            DrawRectangleOutline(spriteBatch, boxRectangle, color, thickness: 1);
+        }
+    }
+
+    public void DrawRectangleOutline(SpriteBatch spriteBatch, Rectangle rect, Color color, int thickness)
+    {
+        // Top
+        spriteBatch.Draw(_whitePixel, new Rectangle(rect.X, rect.Y, rect.Width, thickness), color);
+
+        // Left
+        spriteBatch.Draw(_whitePixel, new Rectangle(rect.X, rect.Y, thickness, rect.Height), color);
+
+        // Right
+        spriteBatch.Draw(_whitePixel, new Rectangle(rect.Right - thickness, rect.Y, thickness, rect.Height), color);
+
+        // Bottom
+        spriteBatch.Draw(_whitePixel, new Rectangle(rect.X, rect.Bottom - thickness, rect.Width, thickness), color);
     }
 }
 
