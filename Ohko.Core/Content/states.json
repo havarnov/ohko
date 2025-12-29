@@ -9,7 +9,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -44,7 +43,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -78,7 +76,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -93,6 +90,21 @@
           ]
         },
         "0": {
+          "boxes": [
+            {
+              "type": "HitBox",
+              "rectangle": {
+                "location": [
+                  26,
+                  11
+                ],
+                "size": [
+                  3,
+                  2
+                ]
+              }
+            }
+          ],
           "effects": [
             {
               "type": "MoveEffect",
@@ -102,6 +114,21 @@
           ]
         },
         "1": {
+          "boxes": [
+            {
+              "type": "HitBox",
+              "rectangle": {
+                "location": [
+                  28,
+                  11
+                ],
+                "size": [
+                  3,
+                  2
+                ]
+              }
+            }
+          ],
           "effects": [
             {
               "type": "MoveEffect",
@@ -121,7 +148,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -146,7 +172,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -171,7 +196,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -196,7 +220,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -221,7 +244,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -246,7 +268,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -271,7 +292,6 @@
           "boxes": [
             {
               "type": "CollisionBox",
-              "collisionTag": "wall",
               "rectangle": {
                 "location": [
                   7,
@@ -282,116 +302,21 @@
                   16
                 ]
               }
+            },
+            {
+              "type": "HurtBox",
+              "rectangle": {
+                "location": [
+                  10,
+                  10
+                ],
+                "size": [
+                  8,
+                  8
+                ]
+              }
             }
           ]
-        },
-        "0": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  13,
-                  13
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
-        },
-        "1": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  13,
-                  12
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
-        },
-        "2": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  14,
-                  12
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
-        },
-        "3": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  14,
-                  13
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
-        },
-        "4": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  14,
-                  12
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
-        },
-        "5": {
-          "boxes": [
-            {
-              "type": "CollisionBox",
-              "rectangle": {
-                "location": [
-                  13,
-                  12
-                ],
-                "size": [
-                  5,
-                  8
-                ]
-              }
-            }
-          ],
-          "effects": []
         }
       }
     }

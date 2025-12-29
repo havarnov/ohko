@@ -40,6 +40,8 @@ public abstract class Effect
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(CollisionBox), typeDiscriminator: nameof(CollisionBox))]
+[JsonDerivedType(typeof(HurtBox), typeDiscriminator: nameof(HurtBox))]
+[JsonDerivedType(typeof(HitBox), typeDiscriminator: nameof(HitBox))]
 public abstract class Box
 {
     private Box()
@@ -51,9 +53,13 @@ public abstract class Box
 
     public class CollisionBox : Box
     {
-        public string CollisionTag { get; init; }
+        public string? CollisionTag { get; init; }
     }
+
+    public class HurtBox : Box;
+    public class HitBox : Box;
 }
+
 internal class Vector2JsonConverter : JsonConverter<Vector2>
 {
     public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -55,7 +55,7 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
 
                 foreach (var box in CurrentFrameConfiguration?.Boxes ?? [])
                 {
-                    if (box is Box.CollisionBox { CollisionTag: "wall" } collisionBox)
+                    if (box is Box.CollisionBox collisionBox)
                     {
                         body.CreateRectangle(
                             collisionBox.Rectangle.Size.X,
@@ -244,7 +244,9 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
                 box.Rectangle.Size);
 
             var color = box switch {
-                Box.CollisionBox => Color.Red,
+                Box.CollisionBox => Color.Blue,
+                Box.HitBox => Color.Red,
+                Box.HurtBox => Color.Green,
                 _ => Color.White,
             };
 
