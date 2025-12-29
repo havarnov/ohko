@@ -56,6 +56,9 @@ public class OhkoGame : Game
         _opponent = new Hero(_physicsWorld);
         _entityManager.Add(_opponent);
 
+        _hero.Opponent = _opponent;
+        _opponent.Opponent = _hero;
+
         _hero.Face = _opponent;
         _opponent.Face = _hero;
 

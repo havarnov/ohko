@@ -93,6 +93,46 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
 
     private StateInfo CurrentStateInfo => _states[CurrentState];
 
+    public List<Box> Boxes =>
+            CurrentFrameConfiguration?
+            .Boxes
+            .Select(box =>
+            {
+                var size = _states[CurrentState].Animation.CurrentFrame.TextureRegion.Bounds.Size;
+                var offset = size.ToVector2() / 2f;
+                offset = new Vector2((float)Math.Ceiling(offset.X), (float)Math.Floor(offset.Y));
+
+                var location = _isFacingLeft
+                    ? new Point(size.X - box.Rectangle.Location.X - box.Rectangle.Size.X, box.Rectangle.Location.Y)
+                    : box.Rectangle.Location;
+
+                var position = (Position - offset);
+                position.Round();
+                var boxRectangle = new Rectangle(
+                    position.ToPoint()
+                    + location,
+                    box.Rectangle.Size);
+
+                return box switch
+                {
+                    Box.CollisionBox => (Box)new Box.CollisionBox
+                    {
+                        Rectangle = boxRectangle,
+                    },
+                    Box.HitBox => new Box.HitBox()
+                    {
+                        Rectangle = boxRectangle,
+                    },
+                    Box.HurtBox => new Box.HurtBox
+                    {
+                        Rectangle = boxRectangle,
+                    },
+                    _ => throw new ArgumentOutOfRangeException(nameof(box))
+                };
+            })
+            .ToList()
+        ?? [];
+
     public FrameConfiguration? CurrentFrameConfiguration
     {
         get
@@ -285,6 +325,8 @@ public static class Vector2Extensions
 
 public class Hero : IEntity
 {
+    public Hero Opponent { get; set; }
+
     public Hero(World world)
     {
         var body = world.CreateBody(Vector2.Zero.Into(), 0f, BodyType.Dynamic);
@@ -325,6 +367,14 @@ public class Hero : IEntity
             _stateManager.CurrentState = combo;
         }
 
+        foreach (var hitBox in Boxes.Where(b => b is Box.HitBox))
+        {
+            if (Opponent.Hit(hitBox))
+            {
+                // TODO: you hit someone.
+            }
+        }
+
         bool anyEffects = false;
         foreach (var effect in  _stateManager.CurrentFrameConfiguration?.Effects ?? [])
         {
@@ -348,16 +398,30 @@ public class Hero : IEntity
         isGrounded = false;
     }
 
+    private bool Hit(Box hitBox)
+    {
+        var result = false;
+        foreach (var hurtBox in Boxes.Where(b => b is Box.HurtBox))
+        {
+            if (hurtBox.Rectangle.Intersects(hitBox.Rectangle))
+            {
+                Console.WriteLine("HIT");
+                result = true;
+
+
+                _stateManager.Position += new Vector2(10, 0);
+            }
+        }
+
+        return result;
+    }
+
     public void Draw(SpriteBatch spriteBatch)
     {
         _stateManager.Draw(spriteBatch);
     }
 
-    public List<Box> Boxes => _stateManager.CurrentFrameConfiguration?.Boxes ?? [];
-
-    public void OnCollision(IEntity otherEntity, Box own, Box other)
-    {
-    }
+    public List<Box> Boxes => _stateManager.Boxes;
 
     public enum State
     {

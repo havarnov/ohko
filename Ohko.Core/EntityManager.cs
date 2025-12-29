@@ -15,10 +15,6 @@ public interface IEntity
     {
     }
 
-    void OnCollision(IEntity otherEntity, Box own, Box other)
-    {
-    }
-
     void Draw(SpriteBatch spriteBatch)
     {
     }
@@ -42,28 +38,6 @@ public class EntityManager
         foreach (var entity in _entities)
         {
             entity.Update(gameTime);
-        }
-
-        foreach (var entity in _entities)
-        {
-            foreach (var other in _entities)
-            {
-                if (entity == other)
-                {
-                    continue;
-                }
-
-                foreach (var entityBox in entity.Boxes)
-                {
-                    foreach (var otherBox in other.Boxes)
-                    {
-                        if (entityBox.Rectangle.Intersects(otherBox.Rectangle))
-                        {
-                            entity.OnCollision(other, entityBox, otherBox);
-                        }
-                    }
-                }
-            }
         }
 
         Flush();
