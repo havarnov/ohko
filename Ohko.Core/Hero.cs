@@ -16,10 +16,10 @@ namespace Ohko.Core;
 public class StateManager<TState>(TState initialState, bool isFacingLeft, Body body)
     where TState : struct, Enum
 {
-    private bool _isFacingLeft
+    public bool _isFacingLeft
     {
         get => field;
-        set
+        private set
         {
             CurrentStateInfo.Animation.FlipHorizontally = value;
             field = value;
@@ -152,6 +152,7 @@ public class StateManager<TState>(TState initialState, bool isFacingLeft, Body b
                                     SpeedFactor = moveEffect.SpeedFactor,
                                     Vector = moveEffect.Vector * new Vector2(_isFacingLeft ? -1 : 1, 1),
                                 },
+                                Effect.HitEffect e => e,
                                 _ => throw new ArgumentOutOfRangeException(nameof(i))
                             })
                             .ToList(),
@@ -362,20 +363,45 @@ public class Hero : IEntity
         {
         }
 
+        bool anyEffects = false;
+
+        if (_damageVector is not null)
+        {
+            // DAMAGE
+
+            if (_damageInProcess
+                && _stateManager.CurrentFrameConfiguration?.Effects.Any(e => e is Effect.HitEffect) != true)
+            {
+                _damageVector = null;
+                _damageInProcess = false;
+            }
+            else
+            {
+                if (!_damageInProcess)
+                {
+
+                    _stateManager.CurrentState = State.MajorHit;
+                }
+
+                anyEffects = true;
+                _damageVector += new Vector2(0, -1f);
+                _stateManager.Position += _damageVector.Value * 20;
+                _damageVector = null;
+                _damageInProcess = true;
+            }
+        }
+        else
+        {
+            _damageVector = null;
+        }
+
         if (_comboQueue.TryDequeue(out var combo))
         {
             _stateManager.CurrentState = combo;
         }
 
-        foreach (var hitBox in Boxes.Where(b => b is Box.HitBox))
-        {
-            if (Opponent.Hit(hitBox))
-            {
-                // TODO: you hit someone.
-            }
-        }
+        Opponent.Hit(Boxes.Where(b => b is Box.HitBox).Cast<Box.HitBox>().ToList());
 
-        bool anyEffects = false;
         foreach (var effect in  _stateManager.CurrentFrameConfiguration?.Effects ?? [])
         {
             if (effect is Effect.MoveEffect moveEffect)
@@ -387,6 +413,7 @@ public class Hero : IEntity
             }
         }
 
+        // GRAVITY-ISH.
         if (!anyEffects)
         {
             _stateManager.Position = new Vector2(_stateManager.Position.X, _stateManager.Position.Y + (float)(50f * gameTime.ElapsedGameTime.TotalSeconds));
@@ -398,22 +425,45 @@ public class Hero : IEntity
         isGrounded = false;
     }
 
-    private bool Hit(Box hitBox)
+    private bool _damageInProcess = false;
+    private Vector2? _damageVector = null;
+
+    private void Hit(List<Box.HitBox> hitBoxes)
     {
-        var result = false;
-        foreach (var hurtBox in Boxes.Where(b => b is Box.HurtBox))
+        _damageVector = null;
+        foreach (var hitBox in hitBoxes)
         {
-            if (hurtBox.Rectangle.Intersects(hitBox.Rectangle))
+            foreach (var hurtBox in Boxes.Where(b => b is Box.HurtBox))
             {
-                Console.WriteLine("HIT");
-                result = true;
+                if (hurtBox.Rectangle.Intersects(hitBox.Rectangle))
+                {
+                    var top = Math.Max(hitBox.Rectangle.Top, hurtBox.Rectangle.Top);
+                    var bottom = Math.Min(hitBox.Rectangle.Bottom, hurtBox.Rectangle.Bottom);
+                    var yP = (top - bottom) / (float)hurtBox.Rectangle.Height;
 
+                    var left = Math.Max(hitBox.Rectangle.Left, hitBox.Rectangle.Left);
+                    var right = Math.Min(hitBox.Rectangle.Right, hitBox.Rectangle.Right);
+                    var xP = (left - right) / (float)hitBox.Rectangle.Width;
+                    if (_stateManager._isFacingLeft)
+                    {
+                        xP = -xP;
+                    }
 
-                _stateManager.Position += new Vector2(10, 0);
+                    var v = new Vector2(xP, -yP);
+
+                    if (_damageVector is null)
+                    {
+                        _damageVector = v;
+                    }
+                    else
+                    {
+                        _damageVector += v;
+                    }
+                }
             }
         }
 
-        return result;
+        _damageVector?.Normalize();
     }
 
     public void Draw(SpriteBatch spriteBatch)
@@ -435,6 +485,7 @@ public class Hero : IEntity
         KickACharge = 8,
         KickA = 9,
         Back = 10,
+        MajorHit = 11,
     }
 
     internal void AddCombo(List<ControlPad.ButtonPosition> combo)

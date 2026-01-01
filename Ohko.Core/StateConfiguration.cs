@@ -27,8 +27,11 @@ public class FrameConfiguration
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(MoveEffect), typeDiscriminator: nameof(MoveEffect))]
+[JsonDerivedType(typeof(HitEffect), typeDiscriminator: nameof(HitEffect))]
 public abstract class Effect
 {
+    public class HitEffect : Effect;
+
     public class MoveEffect : Effect
     {
         [JsonConverter(typeof(Vector2JsonConverter))]

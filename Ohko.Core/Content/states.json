@@ -1,5 +1,74 @@
 {
   "states": {
+    "MajorHit": {
+      "animationName": "entities",
+      "animationTag": "kFly",
+      "automaticContinuation": "Idle",
+      "frames": {
+        "0": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "rectangle": {
+                "location": [
+                  9,
+                  13
+                ],
+                "size": [
+                  15,
+                  10
+                ]
+              }
+            }
+          ],
+          "effects": [
+            {
+              "type": "HitEffect"
+            }
+          ]
+        },
+        "1": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "rectangle": {
+                "location": [
+                  9,
+                  13
+                ],
+                "size": [
+                  15,
+                  10
+                ]
+              }
+            }
+          ],
+          "effects": [
+            {
+              "type": "HitEffect"
+            }
+          ]
+        },
+        "2": {
+          "boxes": [
+            {
+              "type": "CollisionBox",
+              "rectangle": {
+                "location": [
+                  9,
+                  9
+                ],
+                "size": [
+                  16,
+                  16
+                ]
+              }
+            }
+          ],
+          "effects": []
+        }
+      }
+    },
     "Back": {
       "animationName": "entities",
       "animationTag": "kHit",
