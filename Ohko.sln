@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.iOS", "Ohko.iOS\Ohko.i
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.Desktop", "Ohko.Desktop\Ohko.Desktop.csproj", "{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ohko.Editor", "Ohko.Editor\Ohko.Editor.csproj", "{BC8B63A2-A332-410B-8867-247C2961C756}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D5CEFCF-E8C5-43B6-90A6-7D26B00077E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC8B63A2-A332-410B-8867-247C2961C756}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC8B63A2-A332-410B-8867-247C2961C756}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC8B63A2-A332-410B-8867-247C2961C756}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC8B63A2-A332-410B-8867-247C2961C756}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
