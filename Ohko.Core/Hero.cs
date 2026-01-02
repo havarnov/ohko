@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Aseprite;
-using nkast.Aether.Physics2D.Collision.Shapes;
 using nkast.Aether.Physics2D.Dynamics;
 
 namespace Ohko.Core;
@@ -359,42 +358,6 @@ public class Hero : IEntity
 
     public void Update(GameTime gameTime)
     {
-        if (!isGrounded)
-        {
-        }
-
-        bool anyEffects = false;
-
-        if (_damageVector is not null)
-        {
-            // DAMAGE
-
-            if (_damageInProcess
-                && _stateManager.CurrentFrameConfiguration?.Effects.Any(e => e is Effect.HitEffect) != true)
-            {
-                _damageVector = null;
-                _damageInProcess = false;
-            }
-            else
-            {
-                if (!_damageInProcess)
-                {
-
-                    _stateManager.CurrentState = State.MajorHit;
-                }
-
-                anyEffects = true;
-                _damageVector += new Vector2(0, -1f);
-                _stateManager.Position += _damageVector.Value * 20;
-                _damageVector = null;
-                _damageInProcess = true;
-            }
-        }
-        else
-        {
-            _damageVector = null;
-        }
-
         if (_comboQueue.TryDequeue(out var combo))
         {
             _stateManager.CurrentState = combo;
@@ -402,19 +365,44 @@ public class Hero : IEntity
 
         Opponent.Hit(Boxes.Where(b => b is Box.HitBox).Cast<Box.HitBox>().ToList());
 
+        var velocity = Vector2.Zero;
+
+        if (_knockbackVector is not null && _knockbackTimeRemaining > TimeSpan.Zero)
+        {
+            if (_stateManager.CurrentState != State.MajorHit)
+            {
+                _stateManager.CurrentState = State.MajorHit;
+            }
+
+            var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_knockbackTimeRemaining > TimeSpan.Zero)
+            {
+                velocity += _knockbackVector.Value * dt;
+                _knockbackTimeRemaining -= gameTime.ElapsedGameTime;
+                if (_knockbackTimeRemaining < TimeSpan.Zero)
+                {
+                    _knockbackTimeRemaining = TimeSpan.Zero;
+                }
+            }
+        }
+
         foreach (var effect in  _stateManager.CurrentFrameConfiguration?.Effects ?? [])
         {
             if (effect is Effect.MoveEffect moveEffect)
             {
                 var vector = moveEffect.Vector;
                 vector.Normalize();
-                _stateManager.Position += (vector * moveEffect.SpeedFactor * 1);
-                anyEffects = true;
+                velocity += vector * moveEffect.SpeedFactor * 1;
             }
         }
 
         // GRAVITY-ISH.
-        if (!anyEffects)
+        if (velocity != Vector2.Zero)
+        {
+            _stateManager.Position += velocity;
+        }
+        else
         {
             _stateManager.Position = new Vector2(_stateManager.Position.X, _stateManager.Position.Y + (float)(50f * gameTime.ElapsedGameTime.TotalSeconds));
         }
@@ -425,12 +413,12 @@ public class Hero : IEntity
         isGrounded = false;
     }
 
-    private bool _damageInProcess = false;
-    private Vector2? _damageVector = null;
+    private Vector2? _knockbackVector = null;
+    private TimeSpan _knockbackTimeRemaining = TimeSpan.Zero;
 
     private void Hit(List<Box.HitBox> hitBoxes)
     {
-        _damageVector = null;
+        Vector2? newKnockbackVector = null;
         foreach (var hitBox in hitBoxes)
         {
             foreach (var hurtBox in Boxes.Where(b => b is Box.HurtBox))
@@ -439,31 +427,38 @@ public class Hero : IEntity
                 {
                     var top = Math.Max(hitBox.Rectangle.Top, hurtBox.Rectangle.Top);
                     var bottom = Math.Min(hitBox.Rectangle.Bottom, hurtBox.Rectangle.Bottom);
-                    var yP = (top - bottom) / (float)hurtBox.Rectangle.Height;
+                    var yP = Math.Abs(bottom - top) / (float)hurtBox.Rectangle.Height;
 
                     var left = Math.Max(hitBox.Rectangle.Left, hitBox.Rectangle.Left);
                     var right = Math.Min(hitBox.Rectangle.Right, hitBox.Rectangle.Right);
-                    var xP = (left - right) / (float)hitBox.Rectangle.Width;
-                    if (_stateManager._isFacingLeft)
+                    var xP = Math.Abs(right - left) / (float)hitBox.Rectangle.Width;
+                    if (!_stateManager._isFacingLeft)
                     {
                         xP = -xP;
                     }
 
                     var v = new Vector2(xP, -yP);
 
-                    if (_damageVector is null)
+                    if (newKnockbackVector is null)
                     {
-                        _damageVector = v;
+                        newKnockbackVector = v;
                     }
                     else
                     {
-                        _damageVector += v;
+                        newKnockbackVector += v;
                     }
                 }
             }
         }
 
-        _damageVector?.Normalize();
+        if (newKnockbackVector is not null)
+        {
+            newKnockbackVector?.Normalize();
+            newKnockbackVector *= new Vector2(300, 500);
+            // 60fps == 0.06 fpms == 16.67 mspf
+            _knockbackTimeRemaining = TimeSpan.FromMilliseconds(3 * 16.67);
+            _knockbackVector = newKnockbackVector;
+        }
     }
 
     public void Draw(SpriteBatch spriteBatch)
@@ -490,13 +485,13 @@ public class Hero : IEntity
 
     internal void AddCombo(List<ControlPad.ButtonPosition> combo)
     {
-        if (_comboes.TryGetValue(ToUInt128(combo), out var state))
+        if (_combos.TryGetValue(ToUInt128(combo), out var state))
         {
             _comboQueue.Enqueue(state);
         }
     }
 
-    private Dictionary<UInt128, State> _comboes = new()
+    private readonly Dictionary<UInt128, State> _combos = new()
     {
         {
             ToUInt128([
