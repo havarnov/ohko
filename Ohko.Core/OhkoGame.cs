@@ -1,3 +1,4 @@
+using System;
 using LDtk;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -95,9 +96,29 @@ public class OhkoGame : Game
         _physicsWorld.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
         _controlPad.Update(_gameBounds);
         _entityManager.Update(gameTime);
-        camera.Position = new Vector2((_hero.Position.X + _opponent.Position.X) / 2f, camera.Position.Y);
-        camera.Update();
+
+        UpdateCamera(gameTime);
+
         base.Update(gameTime);
+    }
+
+    public void UpdateCamera(GameTime gameTime)
+    {
+        // --- POSITION ---
+        float targetX = (_hero.Position.X + _opponent.Position.X) / 2f;
+        camera.Position = new Vector2(
+            MathHelper.Lerp(camera.Position.X, targetX, 0.1f),
+            camera.Position.Y
+        );
+
+        // --- ZOOM ---
+        var distance = Math.Abs(_hero.Position.X - _opponent.Position.X);
+        var targetZoom = 200 / distance;
+        targetZoom = MathHelper.Clamp(targetZoom, 2.5f, 5);
+
+        camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, 0.1f);
+
+        camera.Update();
     }
 
     protected override void Draw(GameTime gameTime)
