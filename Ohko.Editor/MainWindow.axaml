@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:editor="clr-namespace:Ohko.Editor"
+        mc:Ignorable="d"
+        d:DesignWidth="800"
+        d:DesignHeight="450"
+        x:Class="Ohko.Editor.MainWindow"
+        Title="MainWindow"
+        x:DataType="editor:MainWindowViewModel">
+
+
+    <Design.DataContext>
+        <editor:MainWindowViewModel/>
+    </Design.DataContext>
+
+
+    <TabControl ItemsSource="{Binding TabItems}">
+        <!-- Template for the Tab Header -->
+        <TabControl.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding TabName}" />
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+
+        <!-- Template for the Tab Content -->
+        <TabControl.ContentTemplate>
+            <editor:ControlSelector>
+                <DataTemplate x:Key="SelectFile" x:DataType="editor:TabbedUserControl">
+                    <editor:SelectFileControl>
+                    </editor:SelectFileControl>
+                </DataTemplate>
+                <DataTemplate x:Key="FileEditor" x:DataType="editor:TabbedUserControl">
+                    <editor:FileEditorControl>
+                    </editor:FileEditorControl>
+                </DataTemplate>
+            </editor:ControlSelector>
+        </TabControl.ContentTemplate>
+    </TabControl>
+
+
+</Window>
