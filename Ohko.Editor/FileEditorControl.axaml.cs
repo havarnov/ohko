@@ -1,8 +1,8 @@
 using System;
-using System.Globalization;
 using System.IO;
 using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.Aseprite.Types;
+using AsepriteDotNet.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -17,6 +17,9 @@ namespace Ohko.Editor;
 public partial class FileEditorControl : UserControl
 {
     private int _frameIdx = 0;
+
+    public static readonly StyledProperty<AsepriteFrameConfigFile?> ConfigFileProperty =
+        AvaloniaProperty.Register<FileEditorControl, AsepriteFrameConfigFile?>(nameof(ConfigFile), null);
 
     public static readonly StyledProperty<AsepriteFile?> AsepriteFileProperty =
         AvaloniaProperty.Register<FileEditorControl, AsepriteFile?>(nameof(AsepriteFile), null);
@@ -53,18 +56,14 @@ public partial class FileEditorControl : UserControl
 
     public AsepriteFrameConfigFile? ConfigFile
     {
-        get;
+        get => GetValue(ConfigFileProperty);
         set
         {
-            field = value;
-            if (field is null)
-            {
-                return;
-            }
+            SetValue(ConfigFileProperty, value);
 
-            if (field.AsepriteFile is not null)
+            if (value?.AsepriteFile is not null)
             {
-                AsepriteFile = field.AsepriteFile;
+                AsepriteFile = value?.AsepriteFile;
             }
         }
     }
@@ -83,7 +82,6 @@ public partial class FileEditorControl : UserControl
         }
 
         var image = SixLabors.ImageSharp.Image.LoadPixelData<Rgba32>(bytes, width, height);
-        image.Save("/tmp/foobar.png");
         return image;
     }
 
@@ -112,8 +110,9 @@ public partial class FileEditorControl : UserControl
             var files = await topLevel.StorageProvider.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
-                    Title = "Open Text File",
+                    Title = "Open Aseprite File",
                     AllowMultiple = false,
+                    FileTypeFilter = [new FilePickerFileType("aseprite"), new FilePickerFileType("ase")]
                 });
 
             if (files.Count != 1)
@@ -121,7 +120,9 @@ public partial class FileEditorControl : UserControl
                 return;
             }
 
-            var file = await AsepriteFrameConfigFile.FromPath(files[0].TryGetLocalPath() ?? throw new InvalidOperationException());
+            var file = AsepriteFileLoader.FromStream(files[0].Name, await files[0].OpenReadAsync());
+            ConfigFile.SetAsepriteFile(file, files[0].TryGetLocalPath());
+            AsepriteFile = file;
         }
         catch (Exception e)
         {

@@ -7,7 +7,7 @@
              x:DataType="editor:FileEditorControl"
              x:Class="Ohko.Editor.FileEditorControl">
 
-    <Grid IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+    <Grid>
         <!-- Define 2 rows and 2 columns -->
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -20,16 +20,24 @@
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto, *">
+            <StackPanel IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <DockPanel Grid.Row="0" LastChildFill="False">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <Button Click="ZoomInClickHandler" HorizontalAlignment="Right">+</Button>
+                        <Button Click="ZoomOutClickHandler" HorizontalAlignment="Right">-</Button>
+                    </StackPanel>
+                </DockPanel>
 
-            <DockPanel Grid.Row="0" LastChildFill="False">
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <Button Click="ZoomInClickHandler" HorizontalAlignment="Right">+</Button>
-                    <Button Click="ZoomOutClickHandler" HorizontalAlignment="Right">-</Button>
-                </StackPanel>
-            </DockPanel>
+                <editor:ZoomGridCanvas x:DataType="editor:ZoomGridCanvas" Name="ZoomCanvas" Grid.Row="1">
+                </editor:ZoomGridCanvas>
+            </StackPanel>
 
-            <editor:ZoomGridCanvas x:DataType="editor:ZoomGridCanvas" Name="ZoomCanvas" Grid.Row="1">
-            </editor:ZoomGridCanvas>
+            <Grid
+                IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNull}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Button Click="SelectFileButtonClickHandler">Select aseprite file...</Button>
+            </Grid>
         </Grid>
 
         <GridSplitter

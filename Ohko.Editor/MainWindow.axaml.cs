@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
-using AsepriteDotNet.Aseprite;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using ReactiveUI;
 
 namespace Ohko.Editor;
 
@@ -15,46 +17,95 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
+
+    private void SaveMenuItemClickHandler(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.SaveCommand.Execute(null);
+        }
+    }
 }
 
 public class MainWindowViewModel : ViewModelBase
 {
+    public ICommand SaveCommand { get; }
+
     public MainWindowViewModel()
     {
         TabItems.Add(new HomeUserControl
         {
-            TabName = "home",
             UserControlType = UserControlType.SelectFile,
             ViewModel = this,
         });
+
+        SaveCommand = ReactiveCommand.Create(Save);
     }
 
     public ObservableCollection<TabbedUserControl> TabItems { get; set; } = [];
+
+    public TabbedUserControl? SelectedTab
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
 
     public void Select(AsepriteFrameConfigFile file)
     {
         TabItems.Add(new FileEditorTabbedUserControl
         {
             File = file,
-            TabName = Path.GetFileName(file.Path) ?? "<??>",
             UserControlType = UserControlType.FileEditor,
         });
+    }
+
+    private void Save()
+    {
+        if (SelectedTab is FileEditorTabbedUserControl fileEditorTabbedUserControl)
+        {
+            fileEditorTabbedUserControl.File.Save();
+        }
     }
 }
 
 public class FileEditorTabbedUserControl : TabbedUserControl
 {
-    public required AsepriteFrameConfigFile File { get; init; }
+    private AsepriteFrameConfigFile _file = default!;
+
+    public required AsepriteFrameConfigFile File
+    {
+        get => _file;
+        init
+        {
+            _file = value;
+            _file.PropertyChanged += FileOnPropertyChanged;
+        }
+    }
+
+    private void FileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AsepriteFrameConfigFile.IsDirty))
+            RaisePropertyChanged(nameof(TabName));
+    }
+
+    public override string TabName =>
+        (File.IsDirty ? "*" : "") + Path.GetFileName(File.Path);
 }
 
 public class HomeUserControl : TabbedUserControl
 {
     public required MainWindowViewModel ViewModel { get; init; }
+    public override string TabName { get; } = "Home";
 }
 
-public abstract class TabbedUserControl
+public abstract class TabbedUserControl : INotifyPropertyChanged
 {
-    public required string TabName { init; get; }
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void RaisePropertyChanged(string prop)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+
+    public abstract string TabName { get; }
     public required UserControlType UserControlType { get; init; }
 }
 

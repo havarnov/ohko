@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,11 +20,57 @@ public class AsepriteFrameConfigFileDeserializationModel
 
 public class AsepriteFrameConfigItem;
 
-public class AsepriteFrameConfigFile
+public class AsepriteFrameConfigFile : INotifyPropertyChanged
 {
-    public required string? Path { get; init; }
-    public required AsepriteFile? AsepriteFile { get; set; }
-    public required List<AsepriteFrameConfigItem> Items { get; init; }
+    public bool IsDirty
+    {
+        get;
+        private set
+        {
+            if (field != value)
+            {
+                field = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDirty)));
+            }
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string? Path { get; private set; }
+
+    public void SetPath(string path)
+    {
+        if (Path != path)
+        {
+            IsDirty = true;
+        }
+
+        Path = path;
+    }
+
+    public AsepriteFile? AsepriteFile { get; private set; }
+    public string? AsepriteFilePath { get; private set; }
+
+    public void SetAsepriteFile(AsepriteFile? asepriteFile, string? path)
+    {
+        if (!ReferenceEquals(asepriteFile, AsepriteFile))
+        {
+            IsDirty = true;
+        }
+
+        AsepriteFilePath = path;
+        AsepriteFile = asepriteFile;
+    }
+
+    public required ObservableCollection<AsepriteFrameConfigItem> Items
+    {
+        get;
+        set {
+            field = value;
+            field.CollectionChanged += (_, _) => IsDirty = true;
+        }
+    }
 
     public static async Task<AsepriteFrameConfigFile> FromPath(string path)
     {
@@ -32,7 +80,7 @@ public class AsepriteFrameConfigFile
             {
                 Path = path,
                 AsepriteFile = null,
-                Items = [],
+                Items = new ObservableCollection<AsepriteFrameConfigItem>(),
             };
         }
 
@@ -48,10 +96,13 @@ public class AsepriteFrameConfigFile
                 File.OpenRead(file.AsepriteFilePath));
         }
 
-        var items = new List<AsepriteFrameConfigItem>();
+        var items = new ObservableCollection<AsepriteFrameConfigItem>();
         if (file?.Items is not null)
         {
-            items.AddRange(file.Items.Select(i => new AsepriteFrameConfigItem()));
+            foreach (var item in file.Items)
+            {
+                items.Add(new AsepriteFrameConfigItem());
+            }
         }
 
         return new AsepriteFrameConfigFile
@@ -60,5 +111,23 @@ public class AsepriteFrameConfigFile
             AsepriteFile = asepriteFile,
             Items = items,
         };
+    }
+
+    public void Save()
+    {
+        if (Path is null)
+        {
+            return;
+        }
+
+        var serialized = JsonSerializer.Serialize(new AsepriteFrameConfigFileDeserializationModel()
+        {
+            AsepriteFilePath = AsepriteFilePath,
+            Items = Items
+                .Select(i => new AsepriteFrameConfigItemDto())
+                .ToList(),
+        });
+        File.WriteAllText(Path, serialized);
+        IsDirty = false;
     }
 }

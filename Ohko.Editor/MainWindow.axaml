@@ -10,13 +10,43 @@
         Title="MainWindow"
         x:DataType="editor:MainWindowViewModel">
 
-
     <Design.DataContext>
         <editor:MainWindowViewModel/>
     </Design.DataContext>
 
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="File" IsVisible="true">
+                <NativeMenu>
+                    <NativeMenuItem Header="Save…" Click="SaveMenuItemClickHandler" Gesture="Meta+S" />
+                </NativeMenu>
+            </NativeMenuItem>
+        </NativeMenu>
+    </NativeMenu.Menu>
 
-    <TabControl Name="MainTab" ItemsSource="{Binding TabItems}">
+    <!-- <MenuItem Name="MainMenuFileSave" -->
+    <!--           Header="_Save" -->
+    <!--           Command="{Binding MenuFileSaveClicked}"> -->
+    <!--     <MenuItem.Gesture> -->
+    <!--         <OnPlatform x:TypeArguments="InputGesture" -->
+    <!--                     Win="Ctrl+S" -->
+    <!--                     Linux="Ctrl+S" -->
+    <!--                     MacOS="Cmd+S"/> -->
+    <!--     </MenuItem.Gesture> -->
+    <!-- </MenuItem> -->
+
+
+    <!-- <Window.KeyBindings> -->
+    <!--     <KeyBinding -->
+    <!--         Gesture="Meta+S" -->
+    <!--         Command="{Binding SaveCommand}" /> -->
+    <!-- -->
+    <!-- </Window.KeyBindings> -->
+
+    <TabControl Name="MainTab"
+                SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                ItemsSource="{Binding TabItems}">
+
         <!-- Template for the Tab Header -->
         <TabControl.ItemTemplate>
             <DataTemplate>
