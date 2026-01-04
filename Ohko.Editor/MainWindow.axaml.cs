@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using AsepriteDotNet.Aseprite;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -20,9 +21,9 @@ public class MainWindowViewModel : ViewModelBase
 {
     public MainWindowViewModel()
     {
-        TabItems.Add(new SelectFileTabbedUserControl
+        TabItems.Add(new HomeUserControl
         {
-            TabName = "Select File",
+            TabName = "home",
             UserControlType = UserControlType.SelectFile,
             ViewModel = this,
         });
@@ -30,12 +31,12 @@ public class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<TabbedUserControl> TabItems { get; set; } = [];
 
-    public void Add(AsepriteFile file)
+    public void Select(AsepriteFrameConfigFile file)
     {
         TabItems.Add(new FileEditorTabbedUserControl
         {
             File = file,
-            TabName = file.Name,
+            TabName = Path.GetFileName(file.Path) ?? "<??>",
             UserControlType = UserControlType.FileEditor,
         });
     }
@@ -43,10 +44,10 @@ public class MainWindowViewModel : ViewModelBase
 
 public class FileEditorTabbedUserControl : TabbedUserControl
 {
-    public required AsepriteFile File { get; init; }
+    public required AsepriteFrameConfigFile File { get; init; }
 }
 
-public class SelectFileTabbedUserControl : TabbedUserControl
+public class HomeUserControl : TabbedUserControl
 {
     public required MainWindowViewModel ViewModel { get; init; }
 }
@@ -79,11 +80,11 @@ public class ControlSelector : IDataTemplate
 
         switch (control, tabbedUserControl)
         {
-            case (SelectFileControl selectFileControl, SelectFileTabbedUserControl selectFileTabbedUserControl):
-                selectFileControl.MainWindowViewModel = selectFileTabbedUserControl.ViewModel;
+            case (HomeControl selectFileControl, HomeUserControl homeUserControl):
+                selectFileControl.MainWindowViewModel = homeUserControl.ViewModel;
                 break;
             case (FileEditorControl fileEditorControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
-                fileEditorControl.File = fileEditorTabbedUserControl.File;
+                fileEditorControl.ConfigFile = fileEditorTabbedUserControl.File;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

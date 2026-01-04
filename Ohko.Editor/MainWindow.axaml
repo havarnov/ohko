@@ -16,7 +16,7 @@
     </Design.DataContext>
 
 
-    <TabControl ItemsSource="{Binding TabItems}">
+    <TabControl Name="MainTab" ItemsSource="{Binding TabItems}">
         <!-- Template for the Tab Header -->
         <TabControl.ItemTemplate>
             <DataTemplate>
@@ -28,8 +28,8 @@
         <TabControl.ContentTemplate>
             <editor:ControlSelector>
                 <DataTemplate x:Key="SelectFile" x:DataType="editor:TabbedUserControl">
-                    <editor:SelectFileControl>
-                    </editor:SelectFileControl>
+                    <editor:HomeControl>
+                    </editor:HomeControl>
                 </DataTemplate>
                 <DataTemplate x:Key="FileEditor" x:DataType="editor:TabbedUserControl">
                     <editor:FileEditorControl>

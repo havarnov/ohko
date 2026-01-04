@@ -1,16 +1,15 @@
 using System;
-using AsepriteDotNet.IO;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 
 namespace Ohko.Editor;
 
-public partial class SelectFileControl : UserControl
+public partial class HomeControl : UserControl
 {
     public MainWindowViewModel? MainWindowViewModel { get; set; }
 
-    public SelectFileControl()
+    public HomeControl()
     {
         InitializeComponent();
     }
@@ -32,7 +31,6 @@ public partial class SelectFileControl : UserControl
                 {
                     Title = "Open Text File",
                     AllowMultiple = false,
-                    FileTypeFilter = [new FilePickerFileType("aseprite"), new FilePickerFileType("ase")],
                 });
 
             if (files.Count != 1)
@@ -40,11 +38,9 @@ public partial class SelectFileControl : UserControl
                 return;
             }
 
-            var file = AsepriteFileLoader.FromStream(
-                files[0].Name,
-                await files[0].OpenReadAsync());
+            var file = await AsepriteFrameConfigFile.FromPath(files[0].TryGetLocalPath() ?? throw new InvalidOperationException());
 
-            MainWindowViewModel?.Add(file);
+            MainWindowViewModel?.Select(file);
         }
         catch (Exception e)
         {

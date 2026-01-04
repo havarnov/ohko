@@ -2,10 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:editor="clr-namespace:Ohko.Editor"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="editor:FileEditorControl"
              x:Class="Ohko.Editor.FileEditorControl">
 
-    <Grid>
+    <Grid IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
         <!-- Define 2 rows and 2 columns -->
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -17,30 +19,38 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- First column, first row -->
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="Top of first column" Background="LightBlue"/>
+        <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto, *">
+
+            <DockPanel Grid.Row="0" LastChildFill="False">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <Button Click="ZoomInClickHandler" HorizontalAlignment="Right">+</Button>
+                    <Button Click="ZoomOutClickHandler" HorizontalAlignment="Right">-</Button>
+                </StackPanel>
+            </DockPanel>
+
+            <editor:ZoomGridCanvas x:DataType="editor:ZoomGridCanvas" Name="ZoomCanvas" Grid.Row="1">
+            </editor:ZoomGridCanvas>
+        </Grid>
 
         <GridSplitter
             Grid.Row="0"
             Grid.Column="0"
-            VerticalAlignment="Bottom"
-            ResizeDirection="Rows"
-            Background="Yellow" />
-
-        <!-- First column, second row -->
-        <TextBlock Grid.Row="1" Grid.Column="0" Text="Bottom of first column" Background="LightGreen"/>
-
-        <GridSplitter
-            Grid.Row="0"
-            Grid.Column="0"
-            Grid.RowSpan="2"
             ResizeDirection="Columns"
             HorizontalAlignment="Right"
             VerticalAlignment="Stretch"
             Background="Blue" />
 
-        <!-- Second column, spans both rows -->
-        <TextBlock Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Text="Second column" Background="LightCoral"/>
+        <TextBlock Grid.Row="0" Grid.Column="1" Text="Second column" Background="LightCoral"/>
+
+        <GridSplitter
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            VerticalAlignment="Bottom"
+            ResizeDirection="Rows"
+            Background="Yellow" />
+
+        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="Bottom of first column" Background="LightGreen"/>
     </Grid>
 
 </UserControl>
