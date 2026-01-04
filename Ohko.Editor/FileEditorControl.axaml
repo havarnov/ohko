@@ -20,7 +20,8 @@
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto, *">
-            <StackPanel IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <StackPanel
+                IsVisible="{Binding AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <DockPanel Grid.Row="0" LastChildFill="False">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                         <Button Click="ZoomInClickHandler" HorizontalAlignment="Right">+</Button>

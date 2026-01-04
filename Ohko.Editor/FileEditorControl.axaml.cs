@@ -52,6 +52,10 @@ public partial class FileEditorControl : UserControl
         InitializeComponent();
         DataContext = this;
         AffectsRender<FileEditorControl>(AsepriteFileProperty);
+        ZoomCanvas.PropertyChanged += (_, _) =>
+        {
+            Console.WriteLine("UPDATED.");
+        };
     }
 
     public AsepriteFrameConfigFile? ConfigFile
@@ -121,7 +125,7 @@ public partial class FileEditorControl : UserControl
             }
 
             var file = AsepriteFileLoader.FromStream(files[0].Name, await files[0].OpenReadAsync());
-            ConfigFile.SetAsepriteFile(file, files[0].TryGetLocalPath());
+            ConfigFile?.SetAsepriteFile(file, files[0].TryGetLocalPath());
             AsepriteFile = file;
         }
         catch (Exception e)

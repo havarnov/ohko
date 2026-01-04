@@ -107,35 +107,6 @@ public sealed class ZoomGridCanvas : Control
         }
     }
 
-    // public override void Render(DrawingContext context)
-    // {
-    //     base.Render(context);
-    //
-    //     var img = Image;
-    //     if (img is null || Zoom <= 0)
-    //     {
-    //         return;
-    //     }
-    //
-    //     // Destination size (in screen space)
-    //     var destW = img.PixelSize.Width * Zoom;
-    //     var destH = img.PixelSize.Height * Zoom;
-    //
-    //     // Draw the image at (0,0). Add panning later if you want.
-    //     var destRect = new Rect(0, 0, destW, destH);
-    //
-    //     // Source rect is in image pixels
-    //     var srcRect = new Rect(0, 0, img.PixelSize.Width, img.PixelSize.Height);
-    //
-    //     context.DrawImage(img, srcRect, destRect);
-    //
-    //     DrawGrid(context, img.PixelSize.Width, img.PixelSize.Height);
-    //     DrawRects(context);
-    //
-    //     if (_dragging)
-    //         DrawDragPreview(context);
-    // }
-
     private void DrawGrid(DrawingContext context, int imgW, int imgH)
     {
         var step = Math.Max(1, GridStep);
@@ -182,52 +153,6 @@ public sealed class ZoomGridCanvas : Control
 
         context.DrawRectangle(null, pen, ToScreenRect(r));
     }
-
-    // --- Input (drag to create a rectangle) ---
-    //
-    // protected override void OnPointerPressed(PointerPressedEventArgs e)
-    // {
-    //     base.OnPointerPressed(e);
-    //
-    //     if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-    //     {
-    //         _dragging = true;
-    //         _dragStart = SnapToGrid(ToImagePoint(e.GetPosition(this)));
-    //         _dragCurrent = _dragStart;
-    //         e.Pointer.Capture(this);
-    //         InvalidateVisual();
-    //     }
-    // }
-    //
-    // protected override void OnPointerMoved(PointerEventArgs e)
-    // {
-    //     base.OnPointerMoved(e);
-    //
-    //     if (_dragging)
-    //     {
-    //         _dragCurrent = SnapToGrid(ToImagePoint(e.GetPosition(this)));
-    //         InvalidateVisual();
-    //     }
-    // }
-    //
-    // protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    // {
-    //     base.OnPointerReleased(e);
-    //
-    //     if (_dragging)
-    //     {
-    //         _dragging = false;
-    //         e.Pointer.Capture(null);
-    //
-    //         var r = MakeRect(_dragStart, _dragCurrent);
-    //
-    //         // Ignore tiny / empty rects
-    //         if (r.Width > 0 && r.Height > 0)
-    //             _rects.Add(r);
-    //
-    //         InvalidateVisual();
-    //     }
-    // }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
@@ -346,7 +271,9 @@ public sealed class ZoomGridCanvas : Control
 
             var r = MakeRect(_dragStart, _dragCurrent);
             if (r.Width > 0 && r.Height > 0)
+            {
                 _rects.Add(r);
+            }
 
             InvalidateVisual();
             e.Handled = true;

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -7,10 +8,24 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.IO;
+using Avalonia;
 
 namespace Ohko.Editor;
 
-public class AsepriteFrameConfigItemDto;
+public class AsepriteFrameRectangleDto
+{
+    public required int X { get; init; }
+    public required int Y { get; init; }
+    public required int Width { get; init; }
+    public required int Height { get; init; }
+}
+
+public class AsepriteFrameConfigItemDto
+{
+    public AsepriteFrameRectangleDto? Rectangle { get; init; }
+    public required List<int> Frames { get; init; }
+    public JsonElement? UserData { get; init; }
+}
 
 public class AsepriteFrameConfigFileDeserializationModel
 {
@@ -18,7 +33,40 @@ public class AsepriteFrameConfigFileDeserializationModel
     public List<AsepriteFrameConfigItemDto>? Items { get; init; }
 }
 
-public class AsepriteFrameConfigItem;
+public class AsepriteFrameConfigItem : INotifyPropertyChanged
+{
+    public required Rect? Rectangle
+    {
+        get;
+        set
+        {
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Rectangle)));
+        }
+    }
+
+    public required JsonElement? UserData
+    {
+        get;
+        set
+        {
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Rectangle)));
+        }
+    }
+
+    public required ObservableCollection<int> Frames
+    {
+        get;
+        init
+        {
+            field = value;
+            field.CollectionChanged += (_, _) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Frames)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
 
 public class AsepriteFrameConfigFile : INotifyPropertyChanged
 {
@@ -66,10 +114,53 @@ public class AsepriteFrameConfigFile : INotifyPropertyChanged
     public required ObservableCollection<AsepriteFrameConfigItem> Items
     {
         get;
-        set {
+        set
+        {
+            if (field != null)
+            {
+                // Unsubscribe from previous collection and items
+                field.CollectionChanged -= Items_CollectionChanged;
+                foreach (var item in field)
+                {
+                    item.PropertyChanged -= Item_PropertyChanged;
+                }
+            }
+
             field = value;
-            field.CollectionChanged += (_, _) => IsDirty = true;
+
+            // Subscribe to new collection and items
+            field.CollectionChanged += Items_CollectionChanged;
+            foreach (var item in field)
+            {
+                item.PropertyChanged += Item_PropertyChanged;
+            }
         }
+    }
+
+    private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        IsDirty = true;
+
+        if (e.OldItems != null)
+        {
+            foreach (AsepriteFrameConfigItem oldItem in e.OldItems)
+            {
+                oldItem.PropertyChanged -= Item_PropertyChanged;
+            }
+        }
+
+        if (e.NewItems != null)
+        {
+            foreach (AsepriteFrameConfigItem newItem in e.NewItems)
+            {
+                newItem.PropertyChanged += Item_PropertyChanged;
+            }
+        }
+    }
+
+    private void Item_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        IsDirty = true;
     }
 
     public static async Task<AsepriteFrameConfigFile> FromPath(string path)
@@ -101,7 +192,17 @@ public class AsepriteFrameConfigFile : INotifyPropertyChanged
         {
             foreach (var item in file.Items)
             {
-                items.Add(new AsepriteFrameConfigItem());
+                var frames = new ObservableCollection<int>(item.Frames);
+                items.Add(new AsepriteFrameConfigItem()
+                {
+                    Rectangle = item.Rectangle is { } r
+                        ? new Rect(
+                            position: new Point(r.X, r.Y),
+                            size: new Size(r.Width, r.Height))
+                        : null,
+                    UserData = item.UserData,
+                    Frames = frames,
+                });
             }
         }
 
@@ -124,7 +225,10 @@ public class AsepriteFrameConfigFile : INotifyPropertyChanged
         {
             AsepriteFilePath = AsepriteFilePath,
             Items = Items
-                .Select(i => new AsepriteFrameConfigItemDto())
+                .Select(i => new AsepriteFrameConfigItemDto
+                {
+                    Frames = [],
+                })
                 .ToList(),
         });
         File.WriteAllText(Path, serialized);
