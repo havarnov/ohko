@@ -97,20 +97,6 @@ public sealed class ZoomGridCanvas : Control
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
     }
 
-    // protected override Size MeasureOverride(Size availableSize)
-    // {
-    //     if (Image == null)
-    //     {
-    //         return new Size(0, 0);
-    //     }
-    //
-    //     // Use zoom + image pixel size to determine control size
-    //     double w = -_offset.X + (Image.PixelSize.Width * Zoom);
-    //     double h = -_offset.Y + (Image.PixelSize.Height * Zoom);
-    //
-    //     return new Size(w, h);
-    // }
-
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Image == null)
