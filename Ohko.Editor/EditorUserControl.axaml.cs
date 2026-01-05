@@ -20,7 +20,6 @@ public partial class EditorUserControl : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        // FrameIndexSelector.DataContext = new FramesViewModel(ViewModel.EditorModel);
         UserDataList.DataContext = new UserDataListViewModel(ViewModel.EditorModel);
         UserData.DataContext = new UserDataViewModel(ViewModel.EditorModel);
     }

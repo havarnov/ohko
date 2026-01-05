@@ -36,7 +36,6 @@
             <DockPanel Grid.Row="1" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <!-- Bottom controls -->
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Spacing="10">
-                    <!-- <editor:FramesUserControl x:Name="FrameIndexSelector"/> -->
                     <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                         <editor:FramesControl
                             FrameCount="{Binding EditorModel.FrameCount}"
