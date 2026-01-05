@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:editor="clr-namespace:Ohko.Editor"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="editor:EditorViewModel"
+             x:Class="Ohko.Editor.EditorUserControl">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- File selection -->
+            <RowDefinition Height="*"/>    <!-- Editor / Canvas + bottom controls -->
+        </Grid.RowDefinitions>
+
+        <!-- File selection -->
+        <StackPanel Grid.Row="0" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNull}}">
+            <Button Command="{Binding SelectFileCommand}">Select aseprite file...</Button>
+        </StackPanel>
+
+        <!-- Editor -->
+        <DockPanel Grid.Row="1" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <!-- Bottom controls -->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Spacing="10">
+                <editor:UserDataUserControl x:Name="UserData"/>
+                <editor:FramesUserControl x:Name="FrameIndexSelector"/>
+            </StackPanel>
+
+            <!-- Canvas fills remaining space -->
+            <editor:ZoomGridCanvas Image="{Binding EditorModel.Bitmap}"/>
+        </DockPanel>
+    </Grid>
+</UserControl>

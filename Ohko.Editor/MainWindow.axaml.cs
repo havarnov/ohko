@@ -39,6 +39,8 @@ public class MainWindowViewModel : ViewModelBase
             ViewModel = this,
         });
 
+        new TextBlock();
+
         SaveCommand = ReactiveCommand.Create(Save);
     }
 
@@ -136,6 +138,15 @@ public class ControlSelector : IDataTemplate
                 break;
             case (FileEditorControl fileEditorControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
                 fileEditorControl.ConfigFile = fileEditorTabbedUserControl.File;
+                break;
+            case (EditorUserControl editorUserControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
+                editorUserControl.DataContext = new EditorViewModel(editorUserControl)
+                {
+                    EditorModel = new EditorModel()
+                    {
+                        AsepriteFile = fileEditorTabbedUserControl.File.AsepriteFile,
+                    }
+                };
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

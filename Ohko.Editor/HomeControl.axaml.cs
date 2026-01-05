@@ -12,6 +12,7 @@ public partial class HomeControl : UserControl
     public HomeControl()
     {
         InitializeComponent();
+        DataContext = this;
     }
 
     private async void SelectFileButtonClickHandler(object? sender, RoutedEventArgs eventArgs)

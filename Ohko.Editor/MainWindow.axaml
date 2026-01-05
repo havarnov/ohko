@@ -62,8 +62,8 @@
                     </editor:HomeControl>
                 </DataTemplate>
                 <DataTemplate x:Key="FileEditor" x:DataType="editor:TabbedUserControl">
-                    <editor:FileEditorControl>
-                    </editor:FileEditorControl>
+                    <editor:EditorUserControl>
+                    </editor:EditorUserControl>
                 </DataTemplate>
             </editor:ControlSelector>
         </TabControl.ContentTemplate>

@@ -72,12 +72,54 @@ public sealed class ZoomGridCanvas : Control
 
     public ZoomGridCanvas()
     {
-        // Important: make sure the control actually receives pointer events.
-        // If a control has no background/filled area it can be “hit-test invisible” in some cases;
-        // easiest is to have a (transparent) background via styling or just rely on Control hit testing.
-        // (If you implement this as a Panel, set Background=Transparent.)  [oai_citation:3‡GitHub](https://github.com/AvaloniaUI/Avalonia/discussions/9794?utm_source=chatgpt.com)
         AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty);
+        AffectsMeasure<ZoomGridCanvas>(ImageProperty, ZoomProperty);
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
+    }
+
+    // protected override Size MeasureOverride(Size availableSize)
+    // {
+    //     if (Image == null)
+    //     {
+    //         return new Size(0, 0);
+    //     }
+    //
+    //     // Use zoom + image pixel size to determine control size
+    //     double w = -_offset.X + (Image.PixelSize.Width * Zoom);
+    //     double h = -_offset.Y + (Image.PixelSize.Height * Zoom);
+    //
+    //     return new Size(w, h);
+    // }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        if (Image == null)
+            return new Size(0, 0);
+
+        var imgW = Image.PixelSize.Width * Zoom;
+        var imgH = Image.PixelSize.Height * Zoom;
+
+        // Compute bounding box including panning
+        // If _offset.X < 0, image is shifted left → control must extend right
+        // If _offset.X > 0, image is shifted right → control must extend right to include offset
+
+        double width = imgW + Math.Max(0, _offset.X);      // extend right if panned right
+        double height = imgH + Math.Max(0, _offset.Y);     // extend down if panned down
+
+        // If _offset.X is negative, the image goes left → extend left (for layout, can't have negative size)
+        double left = Math.Max(0, -_offset.X);
+        double top = Math.Max(0, -_offset.Y);
+
+        width += left;
+        height += top;
+
+        return new Size(width, height);
+    }
+
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        return finalSize;
     }
 
     public override void Render(DrawingContext context)
@@ -181,6 +223,7 @@ public sealed class ZoomGridCanvas : Control
 
         Zoom = newZoom;
         InvalidateVisual();
+        InvalidateMeasure();
 
         e.Handled = true;
     }
@@ -240,6 +283,7 @@ public sealed class ZoomGridCanvas : Control
             var delta = now - _panStartPointer;
             _offset = _panStartOffset + delta;
             InvalidateVisual();
+            InvalidateMeasure();
             e.Handled = true;
             return;
         }
@@ -250,6 +294,12 @@ public sealed class ZoomGridCanvas : Control
             InvalidateVisual();
             e.Handled = true;
         }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ClipToBounds = true;
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -297,6 +347,27 @@ public sealed class ZoomGridCanvas : Control
         var step = Math.Max(1, GridStep);
         double sx = Math.Round(imagePoint.X / step) * step;
         double sy = Math.Round(imagePoint.Y / step) * step;
+
+        if (sx < 0)
+        {
+            sx = 0;
+        }
+
+        if (sy < 0)
+        {
+            sy = 0;
+        }
+
+        if (sx > Image?.PixelSize.Width)
+        {
+            sx = Image.PixelSize.Width;
+        }
+
+        if (sy > Image?.PixelSize.Height)
+        {
+            sy = Image.PixelSize.Height;
+        }
+
         return new Point(sx, sy);
     }
 

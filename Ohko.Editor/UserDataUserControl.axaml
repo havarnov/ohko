@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:editor="clr-namespace:Ohko.Editor"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:DataType="editor:HomeControl"
-             x:Class="Ohko.Editor.HomeControl">
-
-    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button Click="SelectFileButtonClickHandler">Select file...</Button>
-    </Grid>
+             x:DataType="editor:UserDataViewModel"
+             x:Class="Ohko.Editor.UserDataUserControl">
+    <TextBox
+        Text="{Binding UserData}"
+        Watermark="User Data">
+    </TextBox>
 </UserControl>
