@@ -8,28 +8,72 @@
              x:Class="Ohko.Editor.EditorUserControl">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- File selection -->
-            <RowDefinition Height="*"/>    <!-- Editor / Canvas + bottom controls -->
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- File selection -->
-        <StackPanel Grid.Row="0" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNull}}">
-            <Button Command="{Binding SelectFileCommand}">Select aseprite file...</Button>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <!-- Editor -->
-        <DockPanel Grid.Row="1" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
-            <!-- Bottom controls -->
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Spacing="10">
-                <editor:UserDataUserControl x:Name="UserData"/>
-                <editor:FramesUserControl x:Name="FrameIndexSelector"/>
+        <Grid Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="0, 0, 2, 0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- File selection -->
+            <StackPanel Grid.Row="0" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNull}}">
+                <Button Command="{Binding SelectFileCommand}">Select aseprite file...</Button>
             </StackPanel>
 
-            <!-- Canvas fills remaining space -->
-            <editor:ZoomGridCanvas
-                EditorModel="{Binding EditorModel}"
-                Rectangles="{Binding EditorModel.RectanglesCurrentFrame}"
-                Image="{Binding EditorModel.Bitmap}"/>
-        </DockPanel>
+            <!-- Editor -->
+            <DockPanel Grid.Row="1" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <!-- Bottom controls -->
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Spacing="10">
+                    <editor:UserDataUserControl x:Name="UserData"/>
+                    <editor:FramesUserControl x:Name="FrameIndexSelector"/>
+                </StackPanel>
+
+                <!-- Canvas fills remaining space -->
+                <editor:ZoomGridCanvas
+                    EditorModel="{Binding EditorModel}"
+                    Rectangles="{Binding EditorModel.RectanglesCurrentFrame}"
+                    Image="{Binding EditorModel.Bitmap}"/>
+            </DockPanel>
+        </Grid>
+
+        <GridSplitter
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.RowSpan="2"
+            Width="2"
+            ResizeDirection="Columns"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            Background="Blue" />
+
+        <editor:UserDataListUserControl
+            Grid.Row="0"
+            Grid.Column="1"
+            Name="UserDataList"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+        </editor:UserDataListUserControl>
+
+        <GridSplitter
+            Grid.Row="0"
+            Grid.Column="1"
+            ResizeDirection="Rows"
+            VerticalAlignment="Bottom"
+            Background="Red" />
+
+        <TextBox
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Text="USER DATA"/>
     </Grid>
 </UserControl>

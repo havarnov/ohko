@@ -136,9 +136,6 @@ public class ControlSelector : IDataTemplate
             case (HomeControl selectFileControl, HomeUserControl homeUserControl):
                 selectFileControl.MainWindowViewModel = homeUserControl.ViewModel;
                 break;
-            case (FileEditorControl fileEditorControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
-                fileEditorControl.ConfigFile = fileEditorTabbedUserControl.File;
-                break;
             case (EditorUserControl editorUserControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
                 var editorModel = new EditorModel()
                 {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -20,8 +19,8 @@ public sealed class ZoomGridCanvas : Control
     public static readonly StyledProperty<double> ZoomProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, double>(nameof(Zoom), 10);
 
-    public static readonly StyledProperty<IEnumerable<Rect>> RectanglesProperty =
-        AvaloniaProperty.Register<ZoomGridCanvas, IEnumerable<Rect>>(nameof(Rectangles), []);
+    public static readonly StyledProperty<IEnumerable<RectangleModel>> RectanglesProperty =
+        AvaloniaProperty.Register<ZoomGridCanvas, IEnumerable<RectangleModel>>(nameof(Rectangles), []);
 
     public static readonly StyledProperty<int> GridStepProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, int>(nameof(GridStep), 1);
@@ -50,7 +49,7 @@ public sealed class ZoomGridCanvas : Control
         set => SetValue(EditorModelProperty, value);
     }
 
-    public IEnumerable<Rect> Rectangles
+    public IEnumerable<RectangleModel> Rectangles
     {
         get => GetValue(RectanglesProperty);
         set => SetValue(RectanglesProperty, value);
@@ -198,7 +197,7 @@ public sealed class ZoomGridCanvas : Control
 
         foreach (var r in Rectangles)
         {
-            var sr = ToScreenRect(r);
+            var sr = ToScreenRect(r.Rect);
             context.DrawRectangle(null, pen, sr);
         }
     }

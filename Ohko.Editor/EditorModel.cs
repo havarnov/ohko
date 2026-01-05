@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,6 +7,7 @@ using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.Aseprite.Types;
 using Avalonia;
 using Avalonia.Media.Imaging;
+using DynamicData;
 using ReactiveUI;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -13,18 +15,37 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace Ohko.Editor;
 
+public class RectangleModel : ReactiveObject
+{
+    public required Rect Rect
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public required UserDataModel UserDataModel
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+}
+
 public class UserDataModel : ReactiveObject
 {
-    public ObservableCollection<int> Frames
+    public UserDataModel(Guid id, ObservableCollection<(int, Rect?)> frames)
     {
-        get => field;
-        set => this.RaiseAndSetIfChanged(ref field, value);
-    } = [];
+        Frames = frames;
+        Frames.CollectionChanged += (_, __) =>
+            this.RaisePropertyChanged(nameof(Frames));
+        Id = id;
+    }
 
-    public Rect? Rectangle
+    public Guid Id { get; }
+
+    public ObservableCollection<(int, Rect?)> Frames
     {
         get => field;
-        set => this.RaiseAndSetIfChanged(ref field, value);
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public string? Value
@@ -40,20 +61,40 @@ public class EditorModel : ReactiveObject
 
     private Dictionary<int, Bitmap> _bitmaps = [];
 
-    public ObservableCollection<UserDataModel> UserData { get; } = [ new UserDataModel()
-    {
-        Frames = [0],
-        Rectangle = new Rect(0, 0, 10, 10),
-    }];
+    public ObservableCollection<UserDataModel> UserDataModels { get; } =
+    [
+        new(
+            Guid.NewGuid(),
+            [(0, new Rect(0, 0, 10, 10))])
+        {
+            Value = """
+                    {"her": 42}
+                    """,
+        },
+        new(
+            Guid.NewGuid(),
+            [
+                (0, new Rect(16, 16, 5, 10)),
+                (1, new Rect(16, 16, 5, 10)),
+                (2, new Rect(16, 16, 5, 8)),
+            ])
+        {
+            Value = """
+                    {"her": 43}
+                    """,
+        },
+    ];
 
-    private readonly ObservableCollection<Rect> _rectanglesCurrentFrame = new();
+    private readonly ObservableCollection<RectangleModel> _rectanglesCurrentFrame = [];
+    private readonly ObservableCollection<UserDataModel> _userDataModelsCurrentFrame = [];
 
     public EditorModel()
     {
-        RectanglesCurrentFrame = new ReadOnlyObservableCollection<Rect>(_rectanglesCurrentFrame);
+        RectanglesCurrentFrame = new ReadOnlyObservableCollection<RectangleModel>(_rectanglesCurrentFrame);
+        UserDataModelsCurrentFrame = new ReadOnlyObservableCollection<UserDataModel>(_userDataModelsCurrentFrame);
 
         // Listen to additions/removals in UserData
-        UserData.CollectionChanged += (s, e) =>
+        UserDataModels.CollectionChanged += (s, e) =>
         {
             // For items added: subscribe to property changes
             if (e.NewItems != null)
@@ -74,11 +115,11 @@ public class EditorModel : ReactiveObject
             }
 
             // Recalculate rectangles for the current frame
-            UpdateRectanglesForCurrentFrame();
+            UpdateForCurrentFrame();
         };
 
         // Subscribe existing items (if any)
-        foreach (var item in UserData)
+        foreach (var item in UserDataModels)
         {
             item.PropertyChanged += UserDataItem_PropertyChanged;
         }
@@ -86,13 +127,23 @@ public class EditorModel : ReactiveObject
 
     private void UserDataItem_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(UserDataModel.Rectangle))
-        {
-            UpdateRectanglesForCurrentFrame();
-        }
+        UpdateForCurrentFrame();
     }
 
-    public ReadOnlyObservableCollection<Rect> RectanglesCurrentFrame { get; }
+    public ReadOnlyObservableCollection<RectangleModel> RectanglesCurrentFrame { get; }
+    public ReadOnlyObservableCollection<UserDataModel> UserDataModelsCurrentFrame { get; }
+
+    public UserDataModel? SelectedUserDataModel
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public Guid? SelectedUserDataModelId
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
 
     public Bitmap? Bitmap
     {
@@ -129,7 +180,7 @@ public class EditorModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(Bitmap));
-            UpdateRectanglesForCurrentFrame();
+            UpdateForCurrentFrame();
         }
     }
 
@@ -163,27 +214,65 @@ public class EditorModel : ReactiveObject
         return image;
     }
 
-    private void UpdateRectanglesForCurrentFrame()
+    private void UpdateForCurrentFrame()
     {
-        _rectanglesCurrentFrame.Clear();
-
-        var relevant = UserData
-            .Where(u => u.Frames.Contains(SelectedFrameIdx))
-            .Where(u => u.Rectangle.HasValue)
-            .Select(u => u.Rectangle!.Value);
-
-        foreach (var r in relevant)
         {
-            _rectanglesCurrentFrame.Add(r);
+            var relevant = UserDataModels
+                .Select(u =>
+                {
+                    (int, Rect?)? frame = u.Frames.FirstOrDefault(i => i.Item1 == SelectedFrameIdx);
+                    if (frame?.Item2 is null)
+                    {
+                        return null;
+                    }
+
+                    return new RectangleModel()
+                    {
+                        Rect = frame.Value.Item2.Value,
+                        UserDataModel = u,
+                    };
+                })
+                .Where(i => i is not null)
+                .Select(i => i!)
+                .ToList();
+
+            var removed = _rectanglesCurrentFrame.Except(relevant).ToList();
+            var inserted = relevant.Except(_rectanglesCurrentFrame).ToList();
+            _rectanglesCurrentFrame.RemoveMany(removed);
+            _rectanglesCurrentFrame.AddRange(inserted);
+        }
+
+        {
+            var relevant = UserDataModels
+                .Where(u => u.Frames.Any(i => i.Item1 == SelectedFrameIdx))
+                .ToList();
+            var removed = _userDataModelsCurrentFrame.Except(relevant).ToList();
+            var inserted = relevant.Except(_userDataModelsCurrentFrame).ToList();
+            _userDataModelsCurrentFrame.RemoveMany(removed);
+            _userDataModelsCurrentFrame.AddRange(inserted);
         }
     }
 
     public void AddRect(Rect rect)
     {
-        UserData.Add(new UserDataModel()
+        if (SelectedUserDataModel is null)
         {
-            Rectangle = rect,
-            Frames = [SelectedFrameIdx],
-        });
+            return;
+        }
+
+        var index = SelectedUserDataModel.Frames
+            .ToList()
+            .FindIndex(f => f.Item1 == SelectedFrameIdx);
+
+        if (index >= 0)
+        {
+            SelectedUserDataModel.Frames[index] = (SelectedFrameIdx, rect);
+        }
+        else
+        {
+            SelectedUserDataModel.Frames.Add((SelectedFrameIdx, rect));
+        }
+
+        SelectedUserDataModel.Frames.Add((SelectedFrameIdx, rect));
     }
 }

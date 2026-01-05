@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:editor="clr-namespace:Ohko.Editor"
+             x:DataType="editor:UserDataListViewModel"
+             x:Class="Ohko.Editor.UserDataListUserControl">
+
+    <ScrollViewer>
+        <ListBox ItemsSource="{Binding EditorModel.UserDataModelsCurrentFrame}"
+                 SelectedItem="{Binding EditorModel.SelectedUserDataModel, Mode=TwoWay}">
+                 <!-- SelectedValue="{Binding EditorModel.SelectedUserDataModelId, Mode=TwoWay}" -->
+                 <!-- SelectedValueBinding="{Binding Id}"> -->
+                 <!-- SelectedItem="{Binding EditorModel.SelectedUserModel, Mode=TwoWay}"> -->
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Value}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </ScrollViewer>
+</UserControl>

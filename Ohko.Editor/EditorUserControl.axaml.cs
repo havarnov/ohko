@@ -27,6 +27,7 @@ public partial class EditorUserControl : UserControl
         base.OnDataContextChanged(e);
         UserData.DataContext = new UserDataViewModel(ViewModel.EditorModel);
         FrameIndexSelector.DataContext = new FramesViewModel(ViewModel.EditorModel);
+        UserDataList.DataContext = new UserDataListViewModel(ViewModel.EditorModel);
     }
 }
 
