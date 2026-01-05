@@ -9,6 +9,7 @@
     <TextBox
         IsEnabled="{Binding EditorModel.SelectedUserDataModel, Converter={x:Static ObjectConverters.IsNotNull}}"
         Text="{Binding EditorModel.SelectedUserDataModel.Value, Mode=TwoWay}"
+        AcceptsReturn="True"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         Watermark="User Data">
