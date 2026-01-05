@@ -275,4 +275,11 @@ public class EditorModel : ReactiveObject
 
         SelectedUserDataModel.Frames.Add((SelectedFrameIdx, rect));
     }
+
+    public void AddUserModel(UserDataModel userDataModel)
+    {
+        userDataModel.Frames.Add((SelectedFrameIdx, null));
+        UserDataModels.Add(userDataModel);
+        SelectedUserDataModel = userDataModel;
+    }
 }
