@@ -9,18 +9,20 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5" />
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Grid
             Grid.Row="0"
             Grid.Column="0"
-            Grid.RowSpan="2">
+            Grid.RowSpan="3">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -56,31 +58,28 @@
 
         <GridSplitter
             Grid.Row="0"
-            Grid.Column="0"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
+            Grid.Column="1"
             ResizeDirection="Columns"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Stretch"
-            Background="Blue" />
+            Background="LightGray"/>
 
         <editor:UserDataListUserControl
             Grid.Row="0"
-            Grid.Column="1"
+            Grid.Column="2"
             Name="UserDataList"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
         </editor:UserDataListUserControl>
 
         <GridSplitter
-            Grid.Row="0"
-            Grid.Column="1"
+            Grid.Row="1"
+            Grid.Column="2"
             ResizeDirection="Rows"
-            VerticalAlignment="Bottom"
-            Background="Red" />
+            Background="LightGray"/>
 
         <editor:UserDataUserControl
-            Grid.Row="1"
-            Grid.Column="1"
+            Grid.Row="2"
+            Grid.Column="2"
             Name="UserData">
         </editor:UserDataUserControl>
     </Grid>
