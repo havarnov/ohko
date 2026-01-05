@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using AsepriteDotNet.Aseprite;
@@ -140,6 +141,55 @@ public class EditorModel : ReactiveObject
         {
             this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(SelectedUserDataValue));
+            if (value is not null)
+            {
+                CurrentlySelectedFrames = new ObservableCollection<int>(value.Frames.Select(i => i.Item1).ToList());
+                CurrentlySelectedFrames.CollectionChanged += (_, args) =>
+                {
+                    switch (args.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            if (SelectedUserDataModel is not null
+                                && args.NewItems?[0] is int newItem)
+                            {
+                                var closest = SelectedUserDataModel.Frames
+                                    .ToList()
+                                    .FindIndex(f => f.Item1 + 1 == newItem || f.Item1 - 1 == newItem);
+
+                                if (closest >= 0)
+                                {
+                                    SelectedUserDataModel.Frames.Add((newItem,  SelectedUserDataModel.Frames[closest].Item2));
+                                }
+                                else
+                                {
+                                    SelectedUserDataModel.Frames.Add((newItem, null));
+                                }
+
+                            }
+                            break;
+                        case NotifyCollectionChangedAction.Remove:
+                            if (SelectedUserDataModel is not null
+                                && args.OldItems?[0] is int oldItem)
+                            {
+                                var index = SelectedUserDataModel.Frames
+                                    .ToList()
+                                    .FindIndex(f => f.Item1 == oldItem);
+
+                                if (index >= 0)
+                                {
+                                    SelectedUserDataModel.Frames.RemoveAt(index);
+                                }
+                            }
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                };
+            }
+            else
+            {
+                CurrentlySelectedFrames = new ObservableCollection<int>([]);
+            }
         }
     }
 
@@ -153,13 +203,6 @@ public class EditorModel : ReactiveObject
                 SelectedUserDataModel.Value = value;
             }
         }
-    }
-
-
-    public Guid? SelectedUserDataModelId
-    {
-        get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public Bitmap? Bitmap
@@ -190,6 +233,26 @@ public class EditorModel : ReactiveObject
         }
     }
 
+    public IEnumerable<(string Name, int Start, int Length)> Tags
+    {
+        get
+        {
+            if (AsepriteFile is null)
+            {
+                return [];
+            }
+
+            return AsepriteFile.Tags.ToArray()
+                .Select(tag => (tag.Name, tag.From, tag.To - tag.From + 1));
+        }
+    }
+
+    public ObservableCollection<int> CurrentlySelectedFrames
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    } = [];
+
     public int SelectedFrameIdx
     {
         get;
@@ -209,6 +272,7 @@ public class EditorModel : ReactiveObject
             this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(FrameCount));
             this.RaisePropertyChanged(nameof(Bitmap));
+            this.RaisePropertyChanged(nameof(Tags));
             SelectedFrameIdx = 0;
             _bitmaps.Clear();
         }
