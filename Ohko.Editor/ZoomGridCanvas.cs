@@ -87,6 +87,9 @@ public sealed class ZoomGridCanvas : Control
     private Point _panStartPointer;   // screen space
     private Vector _panStartOffset;   // screen space
 
+    private readonly IBrush _tileA = new SolidColorBrush(Color.FromArgb(255, 192, 192, 192));   // dark gray
+    private readonly IBrush _tileB = new SolidColorBrush(Color.FromArgb(255, 128, 128, 128));   // slightly lighter
+
     public ZoomGridCanvas()
     {
         AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty, RectanglesProperty);
@@ -148,6 +151,8 @@ public sealed class ZoomGridCanvas : Control
 
         using (context.PushTransform(Matrix.CreateTranslation(_offset.X, _offset.Y)))
         {
+            DrawCheckeredBackground(context);
+
             var destW = img.PixelSize.Width * Zoom;
             var destH = img.PixelSize.Height * Zoom;
 
@@ -166,6 +171,42 @@ public sealed class ZoomGridCanvas : Control
         }
     }
 
+    private void DrawCheckeredBackground(DrawingContext context)
+    {
+        if (Image == null)
+            return;
+
+        const int tileSize = 16;
+        double tileSizeScreen = tileSize * Zoom;
+
+        int imgW = Image.PixelSize.Width;
+        int imgH = Image.PixelSize.Height;
+
+        var imageRect = new Rect(0, 0, imgW * Zoom, imgH * Zoom);
+
+        using (context.PushClip(imageRect))
+        {
+            int tilesX = imgW / tileSize + 1;
+            int tilesY = imgH / tileSize + 1;
+
+            for (int y = 0; y < tilesY; y++)
+            {
+                for (int x = 0; x < tilesX; x++)
+                {
+                    var tile = ((x + y) % 2 == 0) ? _tileA : _tileB;
+
+                    var rect = new Rect(
+                        x * tileSizeScreen,
+                        y * tileSizeScreen,
+                        tileSizeScreen,
+                        tileSizeScreen);
+
+                    context.FillRectangle(tile, rect);
+                }
+            }
+        }
+    }
+
     private void DrawGrid(DrawingContext context, int imgW, int imgH)
     {
         var step = Math.Max(1, GridStep);
@@ -174,7 +215,7 @@ public sealed class ZoomGridCanvas : Control
         // Only draw if grid lines will be at least ~3px apart (optional perf/visual tweak)
         if (step * z < 3) return;
 
-        var pen = new Pen(Brushes.Gray, 1);
+        var pen = new Pen(Brushes.LightGray, 1);
 
         // Vertical lines
         for (int x = 0; x <= imgW; x += step)
