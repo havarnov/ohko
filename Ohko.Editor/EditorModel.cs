@@ -136,8 +136,25 @@ public class EditorModel : ReactiveObject
     public UserDataModel? SelectedUserDataModel
     {
         get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref field, value);
+            this.RaisePropertyChanged(nameof(SelectedUserDataValue));
+        }
     }
+
+    public string? SelectedUserDataValue
+    {
+        get => SelectedUserDataModel?.Value;
+        set
+        {
+            if (SelectedUserDataModel is not null)
+            {
+                SelectedUserDataModel.Value = value;
+            }
+        }
+    }
+
 
     public Guid? SelectedUserDataModelId
     {

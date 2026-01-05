@@ -36,7 +36,6 @@
             <DockPanel Grid.Row="1" IsVisible="{Binding EditorModel.AsepriteFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <!-- Bottom controls -->
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Spacing="10">
-                    <editor:UserDataUserControl x:Name="UserData"/>
                     <editor:FramesUserControl x:Name="FrameIndexSelector"/>
                 </StackPanel>
 
@@ -72,11 +71,10 @@
             VerticalAlignment="Bottom"
             Background="Red" />
 
-        <TextBox
+        <editor:UserDataUserControl
             Grid.Row="1"
             Grid.Column="1"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            Text="USER DATA"/>
+            Name="UserData">
+        </editor:UserDataUserControl>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using ReactiveUI;
 
 namespace Ohko.Editor;
 
@@ -12,5 +13,5 @@ public partial class UserDataUserControl : UserControl
 
 public class UserDataViewModel(EditorModel editorModel) : ViewModelBase
 {
-    public string? UserData { get; set; }
+    public EditorModel EditorModel { get; } = editorModel;
 }

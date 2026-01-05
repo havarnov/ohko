@@ -1,14 +1,9 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AsepriteDotNet.IO;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using DynamicData;
-using DynamicData.Alias;
 using ReactiveUI;
 
 namespace Ohko.Editor;
@@ -25,19 +20,9 @@ public partial class EditorUserControl : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
-        UserData.DataContext = new UserDataViewModel(ViewModel.EditorModel);
         FrameIndexSelector.DataContext = new FramesViewModel(ViewModel.EditorModel);
         UserDataList.DataContext = new UserDataListViewModel(ViewModel.EditorModel);
-    }
-}
-
-public class RectExt
-{
-    public Rect Rect { get; set; }
-
-    public RectExt(Rect rect)
-    {
-        Rect = rect;
+        UserData.DataContext = new UserDataViewModel(ViewModel.EditorModel);
     }
 }
 
