@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -10,13 +11,18 @@ namespace Ohko.Editor;
 
 public sealed class ZoomGridCanvas : Control
 {
+    public static readonly StyledProperty<EditorModel> EditorModelProperty =
+        AvaloniaProperty.Register<ZoomGridCanvas, EditorModel>(nameof(EditorModel));
+
     public static readonly StyledProperty<Bitmap?> ImageProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, Bitmap?>(nameof(Image));
 
     public static readonly StyledProperty<double> ZoomProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, double>(nameof(Zoom), 10);
 
-    /// <summary>Grid step in image-pixel units. 1 means every pixel, 8 means every 8 pixels, etc.</summary>
+    public static readonly StyledProperty<IEnumerable<Rect>> RectanglesProperty =
+        AvaloniaProperty.Register<ZoomGridCanvas, IEnumerable<Rect>>(nameof(Rectangles), []);
+
     public static readonly StyledProperty<int> GridStepProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, int>(nameof(GridStep), 1);
 
@@ -38,6 +44,18 @@ public sealed class ZoomGridCanvas : Control
         set => SetValue(MaxZoomProperty, value);
     }
 
+    public EditorModel EditorModel
+    {
+        get => GetValue(EditorModelProperty);
+        set => SetValue(EditorModelProperty, value);
+    }
+
+    public IEnumerable<Rect> Rectangles
+    {
+        get => GetValue(RectanglesProperty);
+        set => SetValue(RectanglesProperty, value);
+    }
+
     public Bitmap? Image
     {
         get => GetValue(ImageProperty);
@@ -57,7 +75,7 @@ public sealed class ZoomGridCanvas : Control
     }
 
     // Rectangles stored in IMAGE-PIXEL space (logical coords)
-    private readonly List<Rect> _rects = new();
+    // private readonly List<Rect> _rects = new();
 
     // Drag state (in image-pixel space)
     private bool _dragging;
@@ -72,7 +90,7 @@ public sealed class ZoomGridCanvas : Control
 
     public ZoomGridCanvas()
     {
-        AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty);
+        AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty, RectanglesProperty);
         AffectsMeasure<ZoomGridCanvas>(ImageProperty, ZoomProperty);
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
     }
@@ -178,7 +196,7 @@ public sealed class ZoomGridCanvas : Control
     {
         var pen = new Pen(Brushes.Lime, 2);
 
-        foreach (var r in _rects)
+        foreach (var r in Rectangles)
         {
             var sr = ToScreenRect(r);
             context.DrawRectangle(null, pen, sr);
@@ -322,7 +340,7 @@ public sealed class ZoomGridCanvas : Control
             var r = MakeRect(_dragStart, _dragCurrent);
             if (r.Width > 0 && r.Height > 0)
             {
-                _rects.Add(r);
+                EditorModel.AddRect(r);
             }
 
             InvalidateVisual();

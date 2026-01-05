@@ -26,7 +26,10 @@
             </StackPanel>
 
             <!-- Canvas fills remaining space -->
-            <editor:ZoomGridCanvas Image="{Binding EditorModel.Bitmap}"/>
+            <editor:ZoomGridCanvas
+                EditorModel="{Binding EditorModel}"
+                Rectangles="{Binding EditorModel.RectanglesCurrentFrame}"
+                Image="{Binding EditorModel.Bitmap}"/>
         </DockPanel>
     </Grid>
 </UserControl>

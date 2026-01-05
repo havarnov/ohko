@@ -1,9 +1,14 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AsepriteDotNet.IO;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using DynamicData;
+using DynamicData.Alias;
 using ReactiveUI;
 
 namespace Ohko.Editor;
@@ -25,17 +30,28 @@ public partial class EditorUserControl : UserControl
     }
 }
 
+public class RectExt
+{
+    public Rect Rect { get; set; }
+
+    public RectExt(Rect rect)
+    {
+        Rect = rect;
+    }
+}
+
 public class EditorViewModel : ViewModelBase
 {
     private readonly UserControl _control;
-    public required EditorModel EditorModel { get; init; }
-
+    public EditorModel EditorModel { get; }
     public ICommand SelectFileCommand { get; }
 
-    public EditorViewModel(UserControl control)
+    public EditorViewModel(UserControl control, EditorModel editorModel)
     {
+        EditorModel = editorModel;
         _control = control;
         SelectFileCommand = ReactiveCommand.CreateFromTask(SelectFile);
+
     }
 
     private async Task SelectFile()

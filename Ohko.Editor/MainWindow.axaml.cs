@@ -140,13 +140,11 @@ public class ControlSelector : IDataTemplate
                 fileEditorControl.ConfigFile = fileEditorTabbedUserControl.File;
                 break;
             case (EditorUserControl editorUserControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
-                editorUserControl.DataContext = new EditorViewModel(editorUserControl)
+                var editorModel = new EditorModel()
                 {
-                    EditorModel = new EditorModel()
-                    {
-                        AsepriteFile = fileEditorTabbedUserControl.File.AsepriteFile,
-                    }
+                    AsepriteFile = fileEditorTabbedUserControl.File.AsepriteFile,
                 };
+                editorUserControl.DataContext = new EditorViewModel(editorUserControl, editorModel);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
