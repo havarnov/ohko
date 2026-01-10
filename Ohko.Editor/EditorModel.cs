@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using AsepriteDotNet.Aseprite;
 using AsepriteDotNet.Aseprite.Types;
 using Avalonia;
@@ -69,36 +70,27 @@ public class EditorModel : ReactiveObject
 
     private Dictionary<int, Bitmap> _bitmaps = [];
 
-    public ObservableCollection<UserDataModel> UserDataModels { get; } =
-    [
-        new(
-            Guid.NewGuid(),
-            [(0, new Rect(0, 0, 10, 10))])
-        {
-            Value = """
-                    {"her": 42}
-                    """,
-        },
-        new(
-            Guid.NewGuid(),
-            [
-                (0, new Rect(16, 16, 5, 10)),
-                (1, new Rect(16, 16, 5, 10)),
-                (2, new Rect(16, 16, 5, 8)),
-            ])
-        {
-            Value = """
-                    {"her": 43}
-                    """,
-            Color = Color.Parse("Red"),
-        },
-    ];
+    public ObservableCollection<UserDataModel> UserDataModels { get; }
+    public string Path { get; }
+    public string? AsepriteFilePath { get; }
+
+    public bool IsDirty
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
 
     private readonly ObservableCollection<RectangleModel> _rectanglesCurrentFrame = [];
     private readonly ObservableCollection<UserDataModel> _userDataModelsCurrentFrame = [];
 
-    public EditorModel()
+    public EditorModel(
+        string path,
+        string? asepriteFilePath,
+        ObservableCollection<UserDataModel> userDataModels)
     {
+        Path = path;
+        AsepriteFilePath = asepriteFilePath;
+        UserDataModels = userDataModels;
         RectanglesCurrentFrame = new ReadOnlyObservableCollection<RectangleModel>(_rectanglesCurrentFrame);
         UserDataModelsCurrentFrame = new ReadOnlyObservableCollection<UserDataModel>(_userDataModelsCurrentFrame);
 
@@ -123,6 +115,8 @@ public class EditorModel : ReactiveObject
                 }
             }
 
+            IsDirty = true;
+
             // Recalculate rectangles for the current frame
             UpdateForCurrentFrame();
         };
@@ -136,6 +130,7 @@ public class EditorModel : ReactiveObject
 
     private void UserDataItem_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        IsDirty = true;
         UpdateForCurrentFrame();
     }
 
@@ -361,8 +356,6 @@ public class EditorModel : ReactiveObject
         {
             SelectedUserDataModel.Frames.Add((SelectedFrameIdx, rect));
         }
-
-        SelectedUserDataModel.Frames.Add((SelectedFrameIdx, rect));
     }
 
     public void AddUserModel(UserDataModel userDataModel)
@@ -371,4 +364,49 @@ public class EditorModel : ReactiveObject
         UserDataModels.Add(userDataModel);
         SelectedUserDataModel = userDataModel;
     }
+
+    public void Save()
+    {
+        if (Path is null)
+        {
+            throw new NotImplementedException();
+        }
+
+        var content = new AsepriteFrameConfigFileDeserializationModel()
+        {
+            AsepriteFilePath = AsepriteFilePath,
+            UserModels = UserDataModels
+                .Select(u => new AsepriteUserDataItemDto
+                {
+                    Id = u.Id,
+                    Value = u.Value is { } value ? JsonElement.Parse(value) : null,
+                    Color = u.Color.ToString(),
+                    Frames = u.Frames
+                        .Select(f => new AsepriteFrameDto
+                        {
+                            FrameIndex = f.Item1,
+                            Rectangle = f.Item2 is { } rect
+                                ? new AsepriteFrameRectangleDto
+                                {
+                                    X = (int)rect.X,
+                                    Y = (int)rect.Y,
+                                    Width = (int)rect.Width,
+                                    Height = (int)rect.Height,
+                                }
+                                : null,
+                        })
+                        .ToList(),
+                })
+                .ToList(),
+        };
+
+        var serialized = JsonSerializer.Serialize(content, _options);
+        File.WriteAllText(Path, serialized);
+        IsDirty = false;
+    }
+
+    private readonly static JsonSerializerOptions _options = new(JsonSerializerOptions.Default)
+    {
+        WriteIndented = true,
+    };
 }

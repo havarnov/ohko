@@ -1,3 +1,32 @@
 {
-    "AsepriteFilePath": "/Users/havarnov/dev/csharp/tenjutsu-monogame/Content/entities.aseprite"
+  "AsepriteFilePath": "/Users/havarnov/dev/csharp/tenjutsu-monogame/Content/entities.aseprite",
+  "UserModels": [
+    {
+      "Id": "7b71e241-ff49-444b-ba18-731f8cc727c2",
+      "Color": "#ffff727a",
+      "Value": {
+        "$type": "HitBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 0,
+          "Rectangle": [
+            15,
+            11,
+            4,
+            5
+          ]
+        },
+        {
+          "FrameIndex": 1,
+          "Rectangle": [
+            15,
+            9,
+            3,
+            3
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -255,7 +255,6 @@ public sealed class ZoomGridCanvas : Control
 
     private void DrawRects(DrawingContext context)
     {
-        var fallbackBrush = Brushes.Lime;
         var thickness = 2;
         var selectedThickness = 4;
 

@@ -1,6 +1,13 @@
 using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using AsepriteDotNet.IO;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
 
 namespace Ohko.Editor;
@@ -39,9 +46,58 @@ public partial class HomeControl : UserControl
                 return;
             }
 
-            var file = await AsepriteFrameConfigFile.FromPath(files[0].TryGetLocalPath() ?? throw new InvalidOperationException());
+            var path = files[0].TryGetLocalPath();
+            if (path is null)
+            {
+                throw new Exception("??");
+            }
 
-            MainWindowViewModel?.Select(file);
+            var model = JsonSerializer.Deserialize<AsepriteFrameConfigFileDeserializationModel>(await File.ReadAllTextAsync(path));
+            if (model is null)
+            {
+                throw new Exception("??");
+            }
+
+            var userModels = new ObservableCollection<UserDataModel>(
+                model.UserModels?
+                    .Select(u =>
+                    {
+                        var frames =
+                            u.Frames?
+                                .Select(f =>
+                                {
+                                    Rect? rect = null;
+                                    if (f.Rectangle is { } rectangle)
+                                    {
+                                        rect = new Rect(
+                                            new Point(rectangle.X, rectangle.Y),
+                                            new Size(rectangle.Width, rectangle.Height));
+                                    }
+
+                                    return (f.FrameIndex, rect);
+                                })
+                                .ToList()
+                            ?? [];
+                        return new UserDataModel(u.Id, new ObservableCollection<(int, Rect?)>(frames))
+                        {
+                            Value = u.Value is null
+                                ? null
+                                : JsonSerializer.Serialize(u.Value),
+                            Color = u.Color is null
+                                ? Color.Parse("Lime")
+                                : Color.Parse(u.Color),
+                        };
+                    })
+                    .ToList()
+                ?? []);
+            var editorModel = new EditorModel(path, model.AsepriteFilePath, userModels)
+            {
+                AsepriteFile = model.AsepriteFilePath is not null
+                    ? AsepriteFileLoader.FromFile(model.AsepriteFilePath)
+                    : null,
+            };
+
+            MainWindowViewModel?.Select(editorModel);
         }
         catch (Exception e)
         {

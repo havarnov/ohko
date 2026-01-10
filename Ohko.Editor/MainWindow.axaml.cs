@@ -52,11 +52,11 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    public void Select(AsepriteFrameConfigFile file)
+    public void Select(EditorModel editorModel)
     {
         TabItems.Add(new FileEditorTabbedUserControl
         {
-            File = file,
+            EditorModel = editorModel,
             UserControlType = UserControlType.FileEditor,
         });
     }
@@ -65,33 +65,31 @@ public class MainWindowViewModel : ViewModelBase
     {
         if (SelectedTab is FileEditorTabbedUserControl fileEditorTabbedUserControl)
         {
-            fileEditorTabbedUserControl.File.Save();
+            fileEditorTabbedUserControl.EditorModel.Save();
         }
     }
 }
 
 public class FileEditorTabbedUserControl : TabbedUserControl
 {
-    private AsepriteFrameConfigFile _file = default!;
-
-    public required AsepriteFrameConfigFile File
+    public required EditorModel EditorModel
     {
-        get => _file;
+        get;
         init
         {
-            _file = value;
-            _file.PropertyChanged += FileOnPropertyChanged;
+            field = value;
+            field.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(EditorModel.IsDirty))
+                {
+                    RaisePropertyChanged(nameof(TabName));
+                }
+            };
         }
     }
 
-    private void FileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(AsepriteFrameConfigFile.IsDirty))
-            RaisePropertyChanged(nameof(TabName));
-    }
-
     public override string TabName =>
-        (File.IsDirty ? "*" : "") + Path.GetFileName(File.Path);
+        Path.GetFileName(EditorModel.Path) + (EditorModel.IsDirty ? "*" : string.Empty) ?? "N/A";
 }
 
 public class HomeUserControl : TabbedUserControl
@@ -137,11 +135,7 @@ public class ControlSelector : IDataTemplate
                 selectFileControl.MainWindowViewModel = homeUserControl.ViewModel;
                 break;
             case (EditorUserControl editorUserControl, FileEditorTabbedUserControl fileEditorTabbedUserControl):
-                var editorModel = new EditorModel()
-                {
-                    AsepriteFile = fileEditorTabbedUserControl.File.AsepriteFile,
-                };
-                editorUserControl.DataContext = new EditorViewModel(editorUserControl, editorModel);
+                editorUserControl.DataContext = new EditorViewModel(editorUserControl, fileEditorTabbedUserControl.EditorModel);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
