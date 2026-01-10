@@ -330,6 +330,17 @@ public sealed class ZoomGridCanvas : Control
             InvalidateVisual();
             e.Handled = true;
         }
+
+        var position = e.GetPosition(this) - _offset;
+        foreach (var rect in Rectangles)
+        {
+            var (outer, inner) = GetOuterInner(rect.Rect);
+            if (outer.Contains(position) && !inner.Contains(position))
+            {
+                UserDataModel = rect.UserDataModel;
+                break;
+            }
+        }
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -352,6 +363,26 @@ public sealed class ZoomGridCanvas : Control
             _dragCurrent = SnapToGrid(ToImagePoint(e.GetPosition(this)));
             InvalidateVisual();
             e.Handled = true;
+        }
+
+        var position = e.GetPosition(this) - _offset;
+
+        bool reset = true;
+
+        foreach (var rect in Rectangles)
+        {
+            var (outer, inner) = GetOuterInner(rect.Rect);
+            if (outer.Contains(position) && !inner.Contains(position))
+            {
+                reset = false;
+                Cursor = new Cursor(StandardCursorType.Hand);
+                break;
+            }
+        }
+
+        if (reset)
+        {
+            Cursor = Cursor.Default;
         }
     }
 
@@ -437,5 +468,16 @@ public sealed class ZoomGridCanvas : Control
         var x2 = Math.Max(a.X, b.X);
         var y2 = Math.Max(a.Y, b.Y);
         return new Rect(x1, y1, x2 - x1, y2 - y1);
+    }
+
+    private (Rect outer, Rect inner) GetOuterInner(Rect imageRect)
+    {
+        var screenRect = ToScreenRect(imageRect);
+        var outer = new Rect(screenRect.TopLeft + new Point(-10, -10),
+            screenRect.BottomRight + new Point(10, 10));
+        var inner = new Rect(screenRect.TopLeft + new Point(10, 10),
+            screenRect.BottomRight + new Point(-10, -10));
+
+        return (outer, inner);
     }
 }
