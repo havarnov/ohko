@@ -51,6 +51,7 @@
                 <!-- Canvas fills remaining space -->
                 <editor:ZoomGridCanvas
                     EditorModel="{Binding EditorModel}"
+                    UserDataModel="{Binding EditorModel.SelectedUserDataModel, Mode=TwoWay}"
                     Rectangles="{Binding EditorModel.RectanglesCurrentFrame}"
                     Image="{Binding EditorModel.Bitmap}"/>
             </DockPanel>

@@ -13,6 +13,9 @@ public sealed class ZoomGridCanvas : Control
     public static readonly StyledProperty<EditorModel> EditorModelProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, EditorModel>(nameof(EditorModel));
 
+    public static readonly StyledProperty<UserDataModel> UserDataModelProperty =
+        AvaloniaProperty.Register<ZoomGridCanvas, UserDataModel>(nameof(UserDataModel));
+
     public static readonly StyledProperty<Bitmap?> ImageProperty =
         AvaloniaProperty.Register<ZoomGridCanvas, Bitmap?>(nameof(Image));
 
@@ -47,6 +50,12 @@ public sealed class ZoomGridCanvas : Control
     {
         get => GetValue(EditorModelProperty);
         set => SetValue(EditorModelProperty, value);
+    }
+
+    public UserDataModel UserDataModel
+    {
+        get => GetValue(UserDataModelProperty);
+        set => SetValue(UserDataModelProperty, value);
     }
 
     public IEnumerable<RectangleModel> Rectangles
@@ -92,7 +101,7 @@ public sealed class ZoomGridCanvas : Control
 
     public ZoomGridCanvas()
     {
-        AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty, RectanglesProperty);
+        AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty, RectanglesProperty, UserDataModelProperty);
         AffectsMeasure<ZoomGridCanvas>(ImageProperty, ZoomProperty);
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
     }
@@ -221,11 +230,17 @@ public sealed class ZoomGridCanvas : Control
     private void DrawRects(DrawingContext context)
     {
         var pen = new Pen(Brushes.Lime, 2);
+        var selectedPen = new Pen(Brushes.Lime, 4);
 
         foreach (var r in Rectangles)
         {
             var sr = ToScreenRect(r.Rect);
-            context.DrawRectangle(null, pen, sr);
+            context.DrawRectangle(
+                null,
+                ReferenceEquals(r.UserDataModel, EditorModel.SelectedUserDataModel)
+                    ? selectedPen
+                    : pen,
+                sr);
         }
     }
 
