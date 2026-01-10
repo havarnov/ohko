@@ -103,13 +103,39 @@ public sealed class ZoomGridCanvas : Control
     {
         AffectsRender<ZoomGridCanvas>(ImageProperty, ZoomProperty, GridStepProperty, MinZoomProperty, MaxZoomProperty, RectanglesProperty, UserDataModelProperty);
         AffectsMeasure<ZoomGridCanvas>(ImageProperty, ZoomProperty);
+
+        UserDataModelProperty.Changed.AddClassHandler<ZoomGridCanvas>((c, e) =>
+        {
+            if (e.OldValue is UserDataModel oldM)
+            {
+                oldM.PropertyChanged -= c.OnUserDataModelChanged;
+            }
+
+            if (e.NewValue is UserDataModel newM)
+            {
+                newM.PropertyChanged += c.OnUserDataModelChanged;
+            }
+
+            c.InvalidateVisual();
+        });
+
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
+    }
+
+    private void OnUserDataModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(UserDataModel.Color))
+        {
+            InvalidateVisual();
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Image == null)
+        {
             return new Size(0, 0);
+        }
 
         var imgW = Image.PixelSize.Width * Zoom;
         var imgH = Image.PixelSize.Height * Zoom;
@@ -229,17 +255,23 @@ public sealed class ZoomGridCanvas : Control
 
     private void DrawRects(DrawingContext context)
     {
-        var pen = new Pen(Brushes.Lime, 2);
-        var selectedPen = new Pen(Brushes.Lime, 4);
+        var fallbackBrush = Brushes.Lime;
+        var thickness = 2;
+        var selectedThickness = 4;
 
-        foreach (var r in Rectangles)
+        foreach (var rectModel in Rectangles)
         {
-            var sr = ToScreenRect(r.Rect);
+            var pen = new Pen(
+                new SolidColorBrush(rectModel.UserDataModel.Color),
+                ReferenceEquals(rectModel.UserDataModel, EditorModel.SelectedUserDataModel)
+                    ? selectedThickness
+                    : thickness);
+
+            var sr = ToScreenRect(rectModel.Rect);
+
             context.DrawRectangle(
                 null,
-                ReferenceEquals(r.UserDataModel, EditorModel.SelectedUserDataModel)
-                    ? selectedPen
-                    : pen,
+                pen,
                 sr);
         }
     }

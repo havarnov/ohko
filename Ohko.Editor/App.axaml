@@ -4,8 +4,9 @@
              Name="Aseprite Frame Config Editor"
              x:Class="Ohko.Editor.App">
 
-    <Application.Styles>
+	<Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
     </Application.Styles>
 
 	<NativeMenu.Menu>

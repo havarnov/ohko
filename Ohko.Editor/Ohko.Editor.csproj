@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="AsepriteDotNet" />
+        <PackageReference Include="Avalonia.Controls.ColorPicker" />
         <PackageReference Include="Avalonia.Desktop" />
         <PackageReference Include="Avalonia.ReactiveUI" />
         <PackageReference Include="Avalonia.Themes.Fluent" />

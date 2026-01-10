@@ -13,6 +13,7 @@ using ReactiveUI;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using Color = Avalonia.Media.Color;
 
 namespace Ohko.Editor;
 
@@ -54,6 +55,12 @@ public class UserDataModel : ReactiveObject
         get => field;
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
+
+    public Color Color
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = Color.Parse("Lime");
 }
 
 public class EditorModel : ReactiveObject
@@ -83,6 +90,7 @@ public class EditorModel : ReactiveObject
             Value = """
                     {"her": 43}
                     """,
+            Color = Color.Parse("Red"),
         },
     ];
 
