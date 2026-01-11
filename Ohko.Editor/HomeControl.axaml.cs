@@ -13,6 +13,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using DynamicData;
+using Ohko.Core;
 using ReactiveUI;
 
 namespace Ohko.Editor;

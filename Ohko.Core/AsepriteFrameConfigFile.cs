@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Ohko.Editor;
+namespace Ohko.Core;
 
 [JsonConverter(typeof(AsepriteFrameRectangleJsonConverter))]
 public class AsepriteFrameRectangleDto

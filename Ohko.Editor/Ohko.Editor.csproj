@@ -17,4 +17,8 @@
         <PackageReference Include="SixLabors.ImageSharp" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Ohko.Core\Ohko.Core.csproj" />
+    </ItemGroup>
+
 </Project>

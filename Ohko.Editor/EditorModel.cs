@@ -10,6 +10,7 @@ using AsepriteDotNet.Aseprite.Types;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using DynamicData;
+using Ohko.Core;
 using ReactiveUI;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;

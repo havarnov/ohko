@@ -11,7 +11,7 @@ using MonoGame.Aseprite;
 
 namespace Ohko.Core;
 
-internal class ControlPad(Hero hero)
+public class ControlPad(Hero hero)
 {
     private Texture2D _texture = null!;
     private readonly Button[] _buttons = new Button[9];
@@ -160,7 +160,7 @@ internal class ControlPad(Hero hero)
         }
     }
 
-    public enum ButtonPosition
+    public enum ButtonPosition : byte
     {
         Unknown = 0,
         TopLeft = 1,

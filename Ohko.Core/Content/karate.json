@@ -1,0 +1,140 @@
+{
+  "AsepriteFilePath": "/Users/havarnov/dev/csharp/ohko/Ohko.Core/Content/karate.aseprite",
+  "UserModels": [
+    {
+      "Id": "9f25ff3d-c295-4d9b-9213-09c4a690abd6",
+      "Color": "#ff0078d7",
+      "Value": {
+        "type": "CollisionBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 0,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 1,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 2,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 3,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 4,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 5,
+          "Rectangle": [
+            11,
+            10,
+            11,
+            13
+          ]
+        },
+        {
+          "FrameIndex": 24,
+          "Rectangle": [
+            12,
+            9,
+            10,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 25,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 26,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 27,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 28,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 29,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 30,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 31,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            14
+          ]
+        }
+      ]
+    }
+  ]
+}

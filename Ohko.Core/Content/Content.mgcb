@@ -18,6 +18,6 @@
 /importer:AsepriteFileContentImporter
 /processor:AsepriteFileContentProcessor
 /processorParam:PremultiplyAlpha=True
-/build:entities.aseprite
+/build:karate.aseprite
 /build:tiles.aseprite
 /build:world.aseprite
