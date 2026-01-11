@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
@@ -54,11 +55,22 @@ public class MainWindowViewModel : ViewModelBase
 
     public void Select(EditorModel editorModel)
     {
+        var existing = TabItems.FirstOrDefault(i =>
+            i is FileEditorTabbedUserControl { } control
+            && control.EditorModel.Path == editorModel.Path);
+        if (existing is not null)
+        {
+            SelectedTab = existing;
+            return;
+        }
+
         TabItems.Add(new FileEditorTabbedUserControl
         {
             EditorModel = editorModel,
             UserControlType = UserControlType.FileEditor,
         });
+
+        SelectedTab = TabItems.LastOrDefault();
     }
 
     private void Save()

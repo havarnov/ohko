@@ -7,7 +7,22 @@
              x:DataType="editor:HomeControl"
              x:Class="Ohko.Editor.HomeControl">
 
-    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button Click="SelectFileButtonClickHandler">Select file...</Button>
+    <Grid
+        RowDefinitions="Auto,*"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
+        <Button Grid.Row="0" Click="SelectFileButtonClickHandler">Select file...</Button>
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentFiles}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <HyperlinkButton
+                        Content="{Binding}"
+                        Command="{Binding SelectRecentFileCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=editor:HomeControl}}"
+                        CommandParameter="{Binding}">
+                    </HyperlinkButton>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
+
 </UserControl>
