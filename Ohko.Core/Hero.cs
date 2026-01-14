@@ -27,7 +27,7 @@ public static class Vector2Extensions
 
 public class Hero : IEntity
 {
-    public Hero Opponent { get; set; }
+    public Hero Opponent { get; set; } = null!;
 
     public Hero(World world)
     {
@@ -43,11 +43,10 @@ public class Hero : IEntity
     private readonly Queue<List<ControlPad.ButtonPosition>> _comboQueue = new();
     private GraphicsDevice _graphicsDevice = null!;
 
-    public IEntity Face { get; set; }
-    // {
-    //     get => _heroConfig.Face;
-    //     set => _heroConfig.Face = value;
-    // }
+    public IEntity Face
+    {
+        set => _heroConfig.Face = value;
+    }
 
     public Vector2 Position
     {

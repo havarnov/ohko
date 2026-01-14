@@ -24,6 +24,25 @@ public abstract class HeroConfig
 
     private readonly Dictionary<string, Animation> _animations = new();
 
+    public static Vector2 CenterOffset(
+        Rectangle a,
+        Rectangle b)
+    {
+        // Center of A
+        var aCenterX = a.Left + a.Width * 0.5f;
+        var aCenterY = a.Top + a.Height * 0.5f;
+
+        // Center of B
+        var bCenterX = b.Left + b.Width * 0.5f;
+        var bCenterY = b.Top + b.Height * 0.5f;
+
+        // Vector from A -> B
+        var dx = bCenterX - aCenterX;
+        var dy = bCenterY - aCenterY;
+
+        return new Vector2(dx, dy);
+    }
+
     private string CurrentAnimation
     {
         get;
@@ -62,7 +81,11 @@ public abstract class HeroConfig
                                 collisionBox.Rectangle.Size.X,
                                 collisionBox.Rectangle.Size.Y,
                                 1f,
-                                Vector2.Zero.Into());
+                                CenterOffset(new Rectangle(0, 0, currentAnimation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Width, currentAnimation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Height),
+                                    _isFacingLeft
+                                    ? new Rectangle(currentAnimation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Width - collisionBox.Rectangle.X - collisionBox.Rectangle.Width, collisionBox.Rectangle.Y, collisionBox.Rectangle.Width, collisionBox.Rectangle.Height)
+                                    : collisionBox.Rectangle)
+                                    .Into());
                             break;
                         default:
                             throw new NotImplementedException();
@@ -70,7 +93,7 @@ public abstract class HeroConfig
                 }
             };
 
-            // currentAnimation.AnimatedSprite.FlipHorizontally = _isFacingLeft;
+            currentAnimation.AnimatedSprite.FlipHorizontally = _isFacingLeft;
             currentAnimation.AnimatedSprite.Stop();
             currentAnimation.AnimatedSprite.Reset();
 
@@ -98,6 +121,17 @@ public abstract class HeroConfig
     protected abstract string GetIdleAnimation();
     protected abstract Dictionary<string, string?> AutomaticContinuations { get; }
     protected abstract List<ComboConfig> ComboConfigs { get; }
+    public IEntity Face { get; set; } = null!;
+
+    private bool _isFacingLeft
+    {
+        get;
+        set
+        {
+            _animations[CurrentAnimation].AnimatedSprite.FlipHorizontally = value;
+            field = value;
+        }
+    } = false;
 
     public void Load(ContentManager content, GraphicsDevice graphicsDevice)
     {
@@ -158,6 +192,16 @@ public abstract class HeroConfig
 
     public void Update(GameTime gameTime)
     {
+        if (Face.Position.X < Position.X)
+        {
+            _isFacingLeft = true;
+        }
+        else
+        {
+            _isFacingLeft = false;
+        }
+
+
         _animations[CurrentAnimation].AnimatedSprite.Update(gameTime);
     }
 
