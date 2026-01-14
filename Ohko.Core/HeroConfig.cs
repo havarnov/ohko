@@ -34,12 +34,11 @@ public abstract class HeroConfig
                 return;
             }
 
-            Console.WriteLine(value);
-
             if (field is not null)
             {
                 _animations[field].AnimatedSprite.Stop();
                 _animations[field].AnimatedSprite.Reset();
+                _animations[field].AnimatedSprite.OnFrameEnd = null;
                 _animations[field].AnimatedSprite.OnFrameBegin = null;
                 _animations[field].AnimatedSprite.OnAnimationBegin = null;
             }
@@ -82,12 +81,11 @@ public abstract class HeroConfig
                 var start = currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex;
                 var count = currentAnimation.AnimatedSprite.FrameCount;
                 var end = start + count - 1;
-                currentAnimation.AnimatedSprite.OnFrameBegin += _ =>
+                currentAnimation.AnimatedSprite.OnFrameEnd += _ =>
                 {
                     if (currentAnimation.AnimatedSprite.CurrentFrame.FrameIndex == end)
                     {
                         CurrentAnimation = currentAnimation.AutomaticContinuation ?? GetIdleAnimation();
-                        Console.WriteLine("FROM: " + CurrentAnimation);
                     }
                 };
             };
@@ -154,23 +152,18 @@ public abstract class HeroConfig
                 AutomaticContinuation = AutomaticContinuations.GetValueOrDefault(tag.Name),
             };
         }
-    }
 
+        CurrentAnimation = GetIdleAnimation();
+    }
 
     public void Update(GameTime gameTime)
     {
-        if (CurrentAnimation is null)
-        {
-            CurrentAnimation = GetIdleAnimation();
-        }
-
         _animations[CurrentAnimation].AnimatedSprite.Update(gameTime);
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
-        var idle = GetIdleAnimation();
-        var animation = _animations[idle];
+        var animation = _animations[CurrentAnimation];
         var spritePosition = Position - (animation.AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Size.ToVector2() / 2);
         spriteBatch.Draw(
             animation.AnimatedSprite.TextureRegion,
@@ -243,14 +236,27 @@ public class KarateConfig : HeroConfig
     {
         { "kPunchA_charge", "kPunchA_hit" },
         { "kPunchA_hit", null },
+        { "kKickA_charge", "kKickA_hit" },
+        { "kKickA_hit", null },
     };
 
     protected override List<ComboConfig> ComboConfigs =>
     [
-        new ComboConfig
+        new()
         {
             Buttons = [ControlPad.ButtonPosition.Center, ControlPad.ButtonPosition.MiddleRight],
             AnimationName = "kPunchA_charge",
+        },
+        new()
+        {
+            Buttons = [
+                ControlPad.ButtonPosition.Center,
+                ControlPad.ButtonPosition.MiddleLeft,
+                ControlPad.ButtonPosition.Center,
+                ControlPad.ButtonPosition.MiddleRight,
+                ControlPad.ButtonPosition.TopRight
+            ],
+            AnimationName = "kKickA_charge",
         },
     ];
 }

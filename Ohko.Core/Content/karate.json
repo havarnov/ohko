@@ -133,6 +133,96 @@
             12,
             14
           ]
+        },
+        {
+          "FrameIndex": 49,
+          "Rectangle": [
+            11,
+            9,
+            8,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 50,
+          "Rectangle": [
+            11,
+            8,
+            10,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 51,
+          "Rectangle": [
+            12,
+            8,
+            10,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 52,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 53,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 54,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 55,
+          "Rectangle": [
+            12,
+            9,
+            12,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 56,
+          "Rectangle": [
+            14,
+            9,
+            8,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 57,
+          "Rectangle": [
+            14,
+            13,
+            10,
+            10
+          ]
+        },
+        {
+          "FrameIndex": 58,
+          "Rectangle": [
+            13,
+            9,
+            8,
+            14
+          ]
         }
       ]
     }
