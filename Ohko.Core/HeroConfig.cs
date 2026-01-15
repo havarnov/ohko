@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using AsepriteDotNet.Aseprite;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -21,6 +22,8 @@ public abstract class HeroConfig
         get => Body.Position.Into();
         set => Body.Position = value.Into();
     }
+
+    public Vector2 Velocity { get; set; } = Vector2.Zero;
 
     private readonly Dictionary<string, Animation> _animations = new();
 
@@ -87,8 +90,6 @@ public abstract class HeroConfig
                                     : collisionBox.Rectangle)
                                     .Into());
                             break;
-                        default:
-                            throw new NotImplementedException();
                     }
                 }
             };
@@ -159,6 +160,13 @@ public abstract class HeroConfig
 
             foreach (var userModel in relevant)
             {
+                if (userModel.Value is null)
+                {
+                    continue;
+                }
+
+                var userModelData = userModel.Value.Value.Deserialize<UserDataValue>();
+
                 foreach (var frame in userModel.Frames?.Where(f => f.FrameIndex >= tag.From && f.FrameIndex <= tag.To) ?? [])
                 {
                     if (!frameConfigDict.TryGetValue(frame.FrameIndex, out var configs))
@@ -167,15 +175,29 @@ public abstract class HeroConfig
                         frameConfigDict[frame.FrameIndex] = configs;
                     }
 
-                    if (frame.Rectangle is null)
+                    switch (userModelData)
                     {
-                        throw new NotImplementedException();
-                    }
+                        case CollisionUserDataValue:
+                            if (frame.Rectangle is null)
+                            {
+                                throw new Exception("Collision user data doesn't have a rectangle");
+                            }
 
-                    configs.Add(new CollisionBoxConfig
-                    {
-                        Rectangle = new Rectangle(frame.Rectangle.X, frame.Rectangle.Y,  frame.Rectangle.Width, frame.Rectangle.Height),
-                    });
+                            configs.Add(new CollisionBoxConfig
+                            {
+                                Rectangle = new Rectangle(frame.Rectangle.X, frame.Rectangle.Y,  frame.Rectangle.Width, frame.Rectangle.Height),
+                            });
+                            break;
+                        case MoveEffectUserDataValue moveEffect:
+                            configs.Add(new MoveEffectConfig
+                            {
+                                Vector = moveEffect.Vector,
+                                Speed = moveEffect.Speed,
+                            });
+                            break;
+                        default:
+                            throw new ArgumentException($"Unknown user data type: {userModelData}");
+                    }
                 }
             }
 
@@ -192,6 +214,8 @@ public abstract class HeroConfig
 
     public void Update(GameTime gameTime)
     {
+        Velocity = Vector2.Zero;
+
         if (Face.Position.X < Position.X)
         {
             _isFacingLeft = true;
@@ -201,6 +225,24 @@ public abstract class HeroConfig
             _isFacingLeft = false;
         }
 
+        foreach (var moveEffect in _animations[CurrentAnimation].Current<MoveEffectConfig>())
+        {
+            var vector = moveEffect.Vector;
+            vector.Normalize();
+            Velocity += vector * moveEffect.Speed * 0.7f;
+        }
+
+        if (Velocity != Vector2.Zero)
+        {
+            Body.Position += Velocity.Into();
+        }
+        else
+        {
+            Body.Position = new Vector2(
+                    Body.Position.X,
+                    (float)(Body.Position.Y + gameTime.ElapsedGameTime.TotalSeconds * 50f))
+                .Into();
+        }
 
         _animations[CurrentAnimation].AnimatedSprite.Update(gameTime);
     }
@@ -242,6 +284,20 @@ public abstract class HeroConfig
     }
 }
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(CollisionUserDataValue), typeDiscriminator: "CollisionBox")]
+[JsonDerivedType(typeof(MoveEffectUserDataValue), typeDiscriminator: "MoveEffect")]
+public abstract class UserDataValue;
+
+public class CollisionUserDataValue : UserDataValue;
+
+public class MoveEffectUserDataValue : UserDataValue
+{
+    [JsonConverter(typeof(Vector2JsonConverter))]
+    public required Vector2 Vector { get; init; }
+    public required float Speed { get; init; }
+}
+
 public class ComboConfig
 {
     public required List<ControlPad.ButtonPosition> Buttons { get; init; }
@@ -258,6 +314,8 @@ public class Animation
         FrameConfigs.TryGetValue(AnimatedSprite.CurrentFrame.FrameIndex, out var frames)
             ? frames
             : [];
+
+    public IEnumerable<T> Current<T>() where T : FrameConfig => CurrentFrame.Where(c => c is T).Cast<T>();
 }
 
 public abstract class FrameConfig;
@@ -268,6 +326,12 @@ public abstract class BoxConfig : FrameConfig
 }
 
 public class CollisionBoxConfig : BoxConfig;
+
+public class MoveEffectConfig : FrameConfig
+{
+    public required Vector2 Vector { get; init; }
+    public required float Speed { get; init; }
+}
 
 public class KarateConfig : HeroConfig
 {

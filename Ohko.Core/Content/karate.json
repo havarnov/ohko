@@ -20,46 +20,46 @@
         {
           "FrameIndex": 1,
           "Rectangle": [
-            11,
+            12,
+            9,
             10,
-            11,
-            13
+            14
           ]
         },
         {
           "FrameIndex": 2,
           "Rectangle": [
-            11,
+            12,
+            9,
             10,
-            11,
-            13
+            14
           ]
         },
         {
           "FrameIndex": 3,
           "Rectangle": [
-            11,
+            12,
             10,
-            11,
+            10,
             13
           ]
         },
         {
           "FrameIndex": 4,
           "Rectangle": [
-            11,
+            12,
+            9,
             10,
-            11,
-            13
+            14
           ]
         },
         {
           "FrameIndex": 5,
           "Rectangle": [
-            11,
+            12,
+            9,
             10,
-            11,
-            13
+            14
           ]
         },
         {
@@ -223,6 +223,64 @@
             8,
             14
           ]
+        }
+      ]
+    },
+    {
+      "Id": "0a6e3b2f-2a1a-47fb-aa92-61e136bf569f",
+      "Color": "Lime",
+      "Value": {
+        "type": "MoveEffect",
+        "Vector": [
+          1,
+          -1
+        ],
+        "Speed": 1
+      },
+      "Frames": [
+        {
+          "FrameIndex": 50,
+          "Rectangle": null
+        }
+      ]
+    },
+    {
+      "Id": "2eff897a-7774-4922-83a8-fc410d484d91",
+      "Color": "Lime",
+      "Value": {
+        "type": "MoveEffect",
+        "Vector": [
+          1,
+          -1
+        ],
+        "Speed": 1
+      },
+      "Frames": [
+        {
+          "FrameIndex": 51,
+          "Rectangle": null
+        }
+      ]
+    },
+    {
+      "Id": "a15293cf-87c3-4bed-aa14-19cca9759a66",
+      "Color": "Lime",
+      "Value": {
+        "type": "MoveEffect",
+        "Vector": [
+          1,
+          0
+        ],
+        "Speed": 1
+      },
+      "Frames": [
+        {
+          "FrameIndex": 52,
+          "Rectangle": null
+        },
+        {
+          "FrameIndex": 53,
+          "Rectangle": null
         }
       ]
     }

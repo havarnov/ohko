@@ -102,14 +102,14 @@ public class Hero : IEntity
         // }
 
         // GRAVITY-ISH.
-        if (velocity != Vector2.Zero)
-        {
-            _heroConfig.Position += velocity;
-        }
-        else
-        {
-            _heroConfig.Position = new Vector2(_heroConfig.Position.X, _heroConfig.Position.Y + (float)(50f * gameTime.ElapsedGameTime.TotalSeconds));
-        }
+        // if (velocity != Vector2.Zero)
+        // {
+        //     _heroConfig.Position += velocity;
+        // }
+        // else
+        // {
+        //     _heroConfig.Position = new Vector2(_heroConfig.Position.X, _heroConfig.Position.Y + (float)(50f * gameTime.ElapsedGameTime.TotalSeconds));
+        // }
 
         _heroConfig.Update(gameTime);
 
