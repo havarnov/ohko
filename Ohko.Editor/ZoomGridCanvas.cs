@@ -318,23 +318,23 @@ public sealed class ZoomGridCanvas : Control
         e.Handled = true;
     }
 
-    public void UpdateZoom(bool zoomIn)
-    {
-        // Wheel up => zoom in, wheel down => zoom out
-        var oldZoom = Zoom;
-
-        // Smooth-ish zoom steps
-        var factor = zoomIn ? 1.1 : 1.0 / 1.1;
-        var newZoom = Math.Clamp(oldZoom * factor, MinZoom, MaxZoom);
-
-        if (Math.Abs(newZoom - oldZoom) < 0.0001)
-        {
-            return;
-        }
-
-        Zoom = newZoom;
-        InvalidateVisual();
-    }
+    // public void UpdateZoom(bool zoomIn)
+    // {
+    //     // Wheel up => zoom in, wheel down => zoom out
+    //     var oldZoom = Zoom;
+    //
+    //     // Smooth-ish zoom steps
+    //     var factor = zoomIn ? 1.1 : 1.0 / 1.1;
+    //     var newZoom = Math.Clamp(oldZoom * factor, MinZoom, MaxZoom);
+    //
+    //     if (Math.Abs(newZoom - oldZoom) < 0.0001)
+    //     {
+    //         return;
+    //     }
+    //
+    //     Zoom = newZoom;
+    //     InvalidateVisual();
+    // }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {

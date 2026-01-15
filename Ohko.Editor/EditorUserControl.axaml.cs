@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AsepriteDotNet.IO;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
@@ -15,6 +16,10 @@ public partial class EditorUserControl : UserControl
     public EditorUserControl()
     {
         InitializeComponent();
+        FramesScrollView.PointerWheelChanged += (sender, e) => {
+            FramesScrollView.Offset = new Vector(FramesScrollView.Offset.X - e.Delta.Y * 10, FramesScrollView.Offset.Y);
+        };
+
     }
 
     protected override void OnDataContextChanged(EventArgs e)
