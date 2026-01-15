@@ -212,24 +212,31 @@ public abstract class HeroConfig
         CurrentAnimation = GetIdleAnimation();
     }
 
+    private bool lockOrientation = false;
+
     public void Update(GameTime gameTime)
     {
+        lockOrientation = false;
         Velocity = Vector2.Zero;
-
-        if (Face.Position.X < Position.X)
-        {
-            _isFacingLeft = true;
-        }
-        else
-        {
-            _isFacingLeft = false;
-        }
 
         foreach (var moveEffect in _animations[CurrentAnimation].Current<MoveEffectConfig>())
         {
-            var vector = moveEffect.Vector;
+            var vector = moveEffect.Vector * new Vector2(_isFacingLeft ? -1 : 1, 1);
             vector.Normalize();
             Velocity += vector * moveEffect.Speed * 0.7f;
+            lockOrientation = true;
+        }
+
+        if (!lockOrientation)
+        {
+            if (Face.Position.X < Position.X)
+            {
+                _isFacingLeft = true;
+            }
+            else
+            {
+                _isFacingLeft = false;
+            }
         }
 
         if (Velocity != Vector2.Zero)
