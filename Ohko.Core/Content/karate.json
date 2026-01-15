@@ -11,9 +11,9 @@
         {
           "FrameIndex": 0,
           "Rectangle": [
-            11,
+            12,
             10,
-            11,
+            10,
             13
           ]
         },
@@ -166,7 +166,7 @@
           "Rectangle": [
             12,
             9,
-            12,
+            10,
             12
           ]
         },
@@ -251,7 +251,7 @@
         "type": "MoveEffect",
         "Vector": [
           1,
-          -1
+          0
         ],
         "Speed": 1
       },
@@ -281,6 +281,96 @@
         {
           "FrameIndex": 53,
           "Rectangle": null
+        }
+      ]
+    },
+    {
+      "Id": "56f89e4d-fdc7-4f40-8cea-6b42993c952b",
+      "Color": "#ff00cc6a",
+      "Value": {
+        "type": "HurtBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 0,
+          "Rectangle": [
+            13,
+            10,
+            4,
+            7
+          ]
+        },
+        {
+          "FrameIndex": 1,
+          "Rectangle": [
+            14,
+            9,
+            4,
+            7
+          ]
+        },
+        {
+          "FrameIndex": 2,
+          "Rectangle": [
+            14,
+            9,
+            5,
+            7
+          ]
+        },
+        {
+          "FrameIndex": 3,
+          "Rectangle": [
+            15,
+            10,
+            4,
+            7
+          ]
+        },
+        {
+          "FrameIndex": 4,
+          "Rectangle": [
+            15,
+            9,
+            4,
+            7
+          ]
+        },
+        {
+          "FrameIndex": 5,
+          "Rectangle": [
+            14,
+            9,
+            4,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "52a6f8b4-c08d-4f5f-9849-80e346345fd6",
+      "Color": "#ffe74856",
+      "Value": {
+        "type": "HitBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 52,
+          "Rectangle": [
+            25,
+            11,
+            6,
+            2
+          ]
+        },
+        {
+          "FrameIndex": 53,
+          "Rectangle": [
+            24,
+            11,
+            5,
+            2
+          ]
         }
       ]
     }

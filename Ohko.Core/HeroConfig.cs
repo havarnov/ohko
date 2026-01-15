@@ -25,7 +25,7 @@ public abstract class HeroConfig
 
     public Vector2 Velocity { get; set; } = Vector2.Zero;
 
-    private readonly Dictionary<string, Animation> _animations = new();
+    public readonly Dictionary<string, Animation> _animations = new();
 
     public static Vector2 CenterOffset(
         Rectangle a,
@@ -46,7 +46,7 @@ public abstract class HeroConfig
         return new Vector2(dx, dy);
     }
 
-    private string CurrentAnimation
+    public string CurrentAnimation
     {
         get;
         set
@@ -124,7 +124,7 @@ public abstract class HeroConfig
     protected abstract List<ComboConfig> ComboConfigs { get; }
     public IEntity Face { get; set; } = null!;
 
-    private bool _isFacingLeft
+    public bool _isFacingLeft
     {
         get;
         set
@@ -195,6 +195,28 @@ public abstract class HeroConfig
                                 Speed = moveEffect.Speed,
                             });
                             break;
+                        case HitBoxUserDataValue hitBox:
+                            if (frame.Rectangle is null)
+                            {
+                                throw new Exception("HitBox user data doesn't have a rectangle");
+                            }
+
+                            configs.Add(new HitBoxConfig
+                            {
+                                Rectangle = new Rectangle(frame.Rectangle.X, frame.Rectangle.Y,  frame.Rectangle.Width, frame.Rectangle.Height),
+                            });
+                            break;
+                        case HurtBoxUserDataValue hurtBox:
+                            if (frame.Rectangle is null)
+                            {
+                                throw new Exception("HurtBox user data doesn't have a rectangle");
+                            }
+
+                            configs.Add(new HurtBoxConfig
+                            {
+                                Rectangle = new Rectangle(frame.Rectangle.X, frame.Rectangle.Y,  frame.Rectangle.Width, frame.Rectangle.Height),
+                            });
+                            break;
                         default:
                             throw new ArgumentException($"Unknown user data type: {userModelData}");
                     }
@@ -206,6 +228,7 @@ public abstract class HeroConfig
                 AnimatedSprite = animatedSprite,
                 FrameConfigs = frameConfigDict,
                 AutomaticContinuation = AutomaticContinuations.GetValueOrDefault(tag.Name),
+                HeroConfig = this,
             };
         }
 
@@ -218,6 +241,22 @@ public abstract class HeroConfig
     {
         lockOrientation = false;
         Velocity = Vector2.Zero;
+
+        if (_knockbackVector is not null && _knockbackTimeRemaining > TimeSpan.Zero)
+        {
+            var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            if (_knockbackTimeRemaining > TimeSpan.Zero)
+            {
+                Console.WriteLine("knocked: " + _knockbackTimeRemaining);
+                Velocity += _knockbackVector.Value * dt;
+                _knockbackTimeRemaining -= gameTime.ElapsedGameTime;
+                if (_knockbackTimeRemaining < TimeSpan.Zero)
+                {
+                    _knockbackTimeRemaining = TimeSpan.Zero;
+                }
+            }
+        }
 
         foreach (var moveEffect in _animations[CurrentAnimation].Current<MoveEffectConfig>())
         {
@@ -277,6 +316,54 @@ public abstract class HeroConfig
         }
     }
 
+     private Vector2? _knockbackVector = null;
+     private TimeSpan _knockbackTimeRemaining = TimeSpan.Zero;
+
+     public void Hit(List<HitBoxConfig> hitBoxes)
+     {
+         Vector2? newKnockbackVector = null;
+         foreach (var hitBox in hitBoxes)
+         {
+             foreach (var hurtBox in _animations[CurrentAnimation].Current<HurtBoxConfig>())
+             {
+                 if (hurtBox.Rectangle.Intersects(hitBox.Rectangle))
+                 {
+                     var top = Math.Max(hitBox.Rectangle.Top, hurtBox.Rectangle.Top);
+                     var bottom = Math.Min(hitBox.Rectangle.Bottom, hurtBox.Rectangle.Bottom);
+                     var yP = Math.Abs(bottom - top) / (float)hurtBox.Rectangle.Height;
+
+                     var left = Math.Max(hitBox.Rectangle.Left, hitBox.Rectangle.Left);
+                     var right = Math.Min(hitBox.Rectangle.Right, hitBox.Rectangle.Right);
+                     var xP = Math.Abs(right - left) / (float)hitBox.Rectangle.Width;
+                     if (!_isFacingLeft)
+                     {
+                         xP = -xP;
+                     }
+
+                     var v = new Vector2(xP, -yP);
+
+                     if (newKnockbackVector is null)
+                     {
+                         newKnockbackVector = v;
+                     }
+                     else
+                     {
+                         newKnockbackVector += v;
+                     }
+                 }
+             }
+         }
+
+         if (newKnockbackVector is not null)
+         {
+             newKnockbackVector?.Normalize();
+             newKnockbackVector *= new Vector2(300, 500);
+             // 60fps == 0.06 fpms == 16.67 mspf
+             _knockbackTimeRemaining = TimeSpan.FromMilliseconds(3 * 16.67);
+             _knockbackVector = newKnockbackVector;
+         }
+     }
+
     private static UInt128 ToUInt128(List<ControlPad.ButtonPosition> combo)
     {
         UInt128 result = 0;
@@ -289,14 +376,23 @@ public abstract class HeroConfig
 
         return result;
     }
+
+    public List<HitBoxConfig> GetHitBoxes()
+    {
+        return _animations[CurrentAnimation].Current<HitBoxConfig>().ToList();
+    }
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(CollisionUserDataValue), typeDiscriminator: "CollisionBox")]
+[JsonDerivedType(typeof(HitBoxUserDataValue), typeDiscriminator: "HitBox")]
+[JsonDerivedType(typeof(HurtBoxUserDataValue), typeDiscriminator: "HurtBox")]
 [JsonDerivedType(typeof(MoveEffectUserDataValue), typeDiscriminator: "MoveEffect")]
 public abstract class UserDataValue;
 
 public class CollisionUserDataValue : UserDataValue;
+public class HitBoxUserDataValue : UserDataValue;
+public class HurtBoxUserDataValue : UserDataValue;
 
 public class MoveEffectUserDataValue : UserDataValue
 {
@@ -316,25 +412,56 @@ public class Animation
     public required AnimatedSprite AnimatedSprite { get; init; }
     public required Dictionary<int, List<FrameConfig>> FrameConfigs { get; init; }
     public required string? AutomaticContinuation { get; init; }
+    public required HeroConfig HeroConfig { get; init; }
 
     public List<FrameConfig> CurrentFrame =>
         FrameConfigs.TryGetValue(AnimatedSprite.CurrentFrame.FrameIndex, out var frames)
             ? frames
             : [];
 
-    public IEnumerable<T> Current<T>() where T : FrameConfig => CurrentFrame.Where(c => c is T).Cast<T>();
+    public IEnumerable<T> Current<T>() where T : FrameConfig => CurrentFrame
+        .Where(c => c is T)
+        .Select(c =>
+        {
+            if (c is BoxConfig bc)
+            {
+                var size = HeroConfig._animations[HeroConfig.CurrentAnimation].AnimatedSprite.CurrentFrame.TextureRegion.Bounds.Size;
+                 var offset = size.ToVector2() / 2f;
+                 offset = new Vector2((float)Math.Ceiling(offset.X), (float)Math.Floor(offset.Y));
+
+                 var location = HeroConfig._isFacingLeft
+                     ? new Point(size.X - bc.Rectangle.Location.X - bc.Rectangle.Size.X, bc.Rectangle.Location.Y)
+                     : bc.Rectangle.Location;
+
+                 var position = (HeroConfig.Position - offset);
+                 position.Round();
+                 var boxRectangle = new Rectangle(
+                     position.ToPoint()
+                     + location,
+                     bc.Rectangle.Size);
+
+                return bc with { Rectangle = boxRectangle, };
+            }
+
+            return c;
+        })
+        .Cast<T>();
 }
 
-public abstract class FrameConfig;
+public abstract record FrameConfig;
 
-public abstract class BoxConfig : FrameConfig
+public abstract record BoxConfig : FrameConfig
 {
     public required Rectangle Rectangle { get; init; }
 }
 
-public class CollisionBoxConfig : BoxConfig;
+public record CollisionBoxConfig : BoxConfig;
 
-public class MoveEffectConfig : FrameConfig
+public record HitBoxConfig : BoxConfig;
+
+public record HurtBoxConfig : BoxConfig;
+
+public record MoveEffectConfig : FrameConfig
 {
     public required Vector2 Vector { get; init; }
     public required float Speed { get; init; }
