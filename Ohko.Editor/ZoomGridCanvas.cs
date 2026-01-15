@@ -318,24 +318,6 @@ public sealed class ZoomGridCanvas : Control
         e.Handled = true;
     }
 
-    // public void UpdateZoom(bool zoomIn)
-    // {
-    //     // Wheel up => zoom in, wheel down => zoom out
-    //     var oldZoom = Zoom;
-    //
-    //     // Smooth-ish zoom steps
-    //     var factor = zoomIn ? 1.1 : 1.0 / 1.1;
-    //     var newZoom = Math.Clamp(oldZoom * factor, MinZoom, MaxZoom);
-    //
-    //     if (Math.Abs(newZoom - oldZoom) < 0.0001)
-    //     {
-    //         return;
-    //     }
-    //
-    //     Zoom = newZoom;
-    //     InvalidateVisual();
-    // }
-
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -360,17 +342,6 @@ public sealed class ZoomGridCanvas : Control
             e.Pointer.Capture(this);
             InvalidateVisual();
             e.Handled = true;
-        }
-
-        var position = e.GetPosition(this) - _offset;
-        foreach (var rect in Rectangles)
-        {
-            var (outer, inner) = GetOuterInner(rect.Rect);
-            if (outer.Contains(position) && !inner.Contains(position))
-            {
-                UserDataModel = rect.UserDataModel;
-                break;
-            }
         }
     }
 
@@ -448,6 +419,17 @@ public sealed class ZoomGridCanvas : Control
 
             InvalidateVisual();
             e.Handled = true;
+        }
+
+        var position = e.GetPosition(this) - _offset;
+        foreach (var rect in Rectangles)
+        {
+            var (outer, inner) = GetOuterInner(rect.Rect);
+            if (outer.Contains(position) && !inner.Contains(position))
+            {
+                UserDataModel = rect.UserDataModel;
+                break;
+            }
         }
     }
 
