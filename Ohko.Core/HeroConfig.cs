@@ -248,8 +248,7 @@ public abstract class HeroConfig
 
             if (_knockbackTimeRemaining > TimeSpan.Zero)
             {
-                Console.WriteLine("knocked: " + _knockbackTimeRemaining);
-                Velocity += _knockbackVector.Value * dt;
+                Velocity += _knockbackVector.Value * dt * 0.5f;
                 _knockbackTimeRemaining -= gameTime.ElapsedGameTime;
                 if (_knockbackTimeRemaining < TimeSpan.Zero)
                 {
@@ -480,6 +479,7 @@ public class KarateConfig : HeroConfig
         { "kPunchA_hit", null },
         { "kKickA_charge", "kKickA_hit" },
         { "kKickA_hit", null },
+        { "kBack", null },
     };
 
     protected override List<ComboConfig> ComboConfigs =>
@@ -488,6 +488,11 @@ public class KarateConfig : HeroConfig
         {
             Buttons = [ControlPad.ButtonPosition.Center, ControlPad.ButtonPosition.MiddleRight],
             AnimationName = "kPunchA_charge",
+        },
+        new()
+        {
+            Buttons = [ControlPad.ButtonPosition.Center, ControlPad.ButtonPosition.MiddleLeft],
+            AnimationName = "kBack",
         },
         new()
         {

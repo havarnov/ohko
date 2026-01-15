@@ -373,6 +373,60 @@
           ]
         }
       ]
+    },
+    {
+      "Id": "168499f6-af80-4486-9f33-a759175ef063",
+      "Color": "#ff0078d7",
+      "Value": {
+        "type": "CollisionBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 88,
+          "Rectangle": [
+            13,
+            11,
+            10,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 89,
+          "Rectangle": [
+            13,
+            9,
+            9,
+            14
+          ]
+        },
+        {
+          "FrameIndex": 90,
+          "Rectangle": [
+            12,
+            11,
+            11,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "b2b916ad-018a-4ae5-8e15-8edb4dc3433e",
+      "Color": "Lime",
+      "Value": {
+        "type": "MoveEffect",
+        "Vector": [
+          -1,
+          -1
+        ],
+        "Speed": 1
+      },
+      "Frames": [
+        {
+          "FrameIndex": 89,
+          "Rectangle": null
+        }
+      ]
     }
   ]
 }
