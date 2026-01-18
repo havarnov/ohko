@@ -279,14 +279,11 @@ public abstract class HeroConfig
 
         if (Velocity != Vector2.Zero)
         {
-            Body.Position += Velocity.Into();
+            Body.LinearVelocity = Velocity.Into() * 50;
         }
         else
         {
-            Body.Position = new Vector2(
-                    Body.Position.X,
-                    (float)(Body.Position.Y + gameTime.ElapsedGameTime.TotalSeconds * 50f))
-                .Into();
+            Body.LinearVelocity = new Vector2(0, 30).Into();
         }
 
         _animations[CurrentAnimation].AnimatedSprite.Update(gameTime);
