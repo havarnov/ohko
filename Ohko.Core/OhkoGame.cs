@@ -115,7 +115,6 @@ public class OhkoGame : Game
         var distance = Math.Abs(_hero.Position.X - _opponent.Position.X);
         var targetZoom = 200 / distance;
         targetZoom = MathHelper.Clamp(targetZoom, 2.5f, 5);
-
         camera.Zoom = MathHelper.Lerp(camera.Zoom, targetZoom, 0.1f);
 
         camera.Update();
@@ -128,27 +127,6 @@ public class OhkoGame : Game
         _spriteBatch.Begin(SpriteSortMode.FrontToBack, null, SamplerState.PointClamp, transformMatrix: camera.Transform);
 
         _entityManager.Draw(_spriteBatch);
-        // foreach (var body in _physicsWorld.BodyList)
-        // {
-        //     if (body.FixtureList[0].Shape is PolygonShape s)
-        //     {
-        //         var _texture = new Texture2D(GraphicsDevice, 1, 1);
-        //         _texture.SetData([Color.Blue]);
-        //         var aabb = s.Vertices.GetAABB();
-        //         _spriteBatch.Draw(
-        //             _texture,
-        //             new Rectangle(
-        //                 new Point((int)(body.Position.X - aabb.Extents.X), (int)(body.Position.Y - aabb.Extents.Y)),
-        //                 new Point((int)s.Vertices.GetAABB().Extents.X * 2,
-        //                     (int)s.Vertices.GetAABB().Extents.Y * 2)),
-        //             sourceRectangle: null,
-        //             Color.White,
-        //             rotation: 0,
-        //             origin: Vector2.Zero,
-        //             effects: SpriteEffects.None,
-        //             layerDepth: 0.99f);
-        //     }
-        // }
 
         _spriteBatch.End();
 
