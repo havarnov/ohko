@@ -223,6 +223,42 @@
             8,
             14
           ]
+        },
+        {
+          "FrameIndex": 73,
+          "Rectangle": [
+            12,
+            13,
+            9,
+            10
+          ]
+        },
+        {
+          "FrameIndex": 85,
+          "Rectangle": [
+            13,
+            11,
+            8,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 86,
+          "Rectangle": [
+            12,
+            11,
+            9,
+            12
+          ]
+        },
+        {
+          "FrameIndex": 87,
+          "Rectangle": [
+            12,
+            10,
+            9,
+            13
+          ]
         }
       ]
     },
@@ -425,6 +461,46 @@
         {
           "FrameIndex": 89,
           "Rectangle": null
+        }
+      ]
+    },
+    {
+      "Id": "f126207a-f7ac-433b-9d41-e8f9f2328bb9",
+      "Color": "Lime",
+      "Value": {
+        "type": "MoveEffect",
+        "Vector": [
+          1,
+          0
+        ],
+        "Speed": 1
+      },
+      "Frames": [
+        {
+          "FrameIndex": 26,
+          "Rectangle": null
+        },
+        {
+          "FrameIndex": 27,
+          "Rectangle": null
+        }
+      ]
+    },
+    {
+      "Id": "f87c7c07-6f2a-4b34-b3d6-a2f55ab8a932",
+      "Color": "Red",
+      "Value": {
+        "type": "HitBox"
+      },
+      "Frames": [
+        {
+          "FrameIndex": 26,
+          "Rectangle": [
+            29,
+            11,
+            3,
+            2
+          ]
         }
       ]
     }

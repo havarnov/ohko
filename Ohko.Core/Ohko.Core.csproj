@@ -7,9 +7,13 @@
 
   <ItemGroup>
     <PackageReference Include="Aether.Physics2D" />
+    <PackageReference Include="AsepriteDotNet" />
     <PackageReference Include="Gum.MonoGame" />
     <PackageReference Include="LDtkMonogame" />
     <PackageReference Include="MonoGame.Aseprite" />
+    <PackageReference Include="MonoGame.Aseprite.Content.Pipeline">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MonoGame.Content.Builder.Task" />
     <PackageReference Include="MonoGame.Framework.DesktopGL">
       <PrivateAssets>All</PrivateAssets>

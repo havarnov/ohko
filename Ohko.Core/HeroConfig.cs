@@ -477,6 +477,8 @@ public class KarateConfig : HeroConfig
         { "kKickA_charge", "kKickA_hit" },
         { "kKickA_hit", null },
         { "kBack", null },
+        { "kDodgeCharge", "kDodgeEndToIdle" },
+        { "kDodgeEndToIdle", null },
     };
 
     protected override List<ComboConfig> ComboConfigs =>
@@ -490,6 +492,11 @@ public class KarateConfig : HeroConfig
         {
             Buttons = [ControlPad.ButtonPosition.Center, ControlPad.ButtonPosition.MiddleLeft],
             AnimationName = "kBack",
+        },
+        new()
+        {
+            Buttons = [ControlPad.ButtonPosition.Center, ControlPad.ButtonPosition.BottomCenter],
+            AnimationName = "kDodgeCharge",
         },
         new()
         {
