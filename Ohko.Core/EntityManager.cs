@@ -9,8 +9,6 @@ public interface IEntity
 {
     Vector2 Position { get; set; }
 
-    List<Box> Boxes => [];
-
     void Update(GameTime gameTime)
     {
     }
