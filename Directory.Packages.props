@@ -5,11 +5,10 @@
   <ItemGroup>
     <PackageVersion Include="Aether.Physics2D" Version="2.2.0" />
     <PackageVersion Include="AsepriteDotNet" Version="1.9.1" />
-    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="11.3.10" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.10" />
+    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.0.0" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.0.0" />
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.8" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.10" />
-    <PackageVersion Include="Gum.MonoGame" Version="2025.12.9.1" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.0" />
     <PackageVersion Include="LDtkMonogame" Version="1.8.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageVersion Include="MonoGame.Aseprite" Version="6.3.2" />
