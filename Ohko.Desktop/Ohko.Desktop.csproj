@@ -8,10 +8,18 @@
 
   <ItemGroup>
     <PackageReference Include="MonoGame.Framework.DesktopGL" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Ohko.Core\Ohko.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../Ohko.Core/Content/**/*">
+      <Link>Content\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="../Ohko.Core/ohko.ldtk" Link="ohko.ldtk" />
   </ItemGroup>
 
 </Project>
