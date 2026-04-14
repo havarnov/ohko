@@ -5,6 +5,24 @@ using Microsoft.Xna.Framework;
 
 namespace Ohko.Core;
 
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(CollisionUserDataValue), typeDiscriminator: "CollisionBox")]
+[JsonDerivedType(typeof(HitBoxUserDataValue), typeDiscriminator: "HitBox")]
+[JsonDerivedType(typeof(HurtBoxUserDataValue), typeDiscriminator: "HurtBox")]
+[JsonDerivedType(typeof(MoveEffectUserDataValue), typeDiscriminator: "MoveEffect")]
+public abstract class UserDataValue;
+
+public class CollisionUserDataValue : UserDataValue;
+public class HitBoxUserDataValue : UserDataValue;
+public class HurtBoxUserDataValue : UserDataValue;
+
+public class MoveEffectUserDataValue : UserDataValue
+{
+    [JsonConverter(typeof(Vector2JsonConverter))]
+    public required Vector2 Vector { get; init; }
+    public required float Speed { get; init; }
+}
+
 internal class Vector2JsonConverter : JsonConverter<Vector2>
 {
     public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -50,15 +50,16 @@ public class OhkoGame : Game
             Gravity = Vector2.Zero.Into(),
         };
 
-        _hero = new Hero(_physicsWorld);
+        _hero = new Karate(_physicsWorld);
         _entityManager.Add(_hero);
         _controlPad = new ControlPad(_hero);
 
-        _opponent = new Hero(_physicsWorld);
+        _opponent = new Karate(_physicsWorld);
         _entityManager.Add(_opponent);
+        _entityManager.Add(new HeroBot(_opponent));
 
-        _hero.Opponent = _opponent;
-        _opponent.Opponent = _hero;
+        _hero.Face = _opponent;
+        _opponent.Face = _hero;
 
         _hero.Face = _opponent;
         _opponent.Face = _hero;
